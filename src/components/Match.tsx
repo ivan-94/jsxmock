@@ -3,7 +3,8 @@ import get from 'lodash/get'
 import { h, Comp } from '../h'
 import { Request, Response } from '../server'
 import { MethodProps } from './Method'
-import { EMPTY_OBJECT, statusCode } from '../utils'
+import { EMPTY_OBJECT, statusCode, transformData } from '../utils'
+import { MockType } from '../mock'
 
 export interface MatchByTypeProps
   extends Omit<MethodProps, 'children' | 'path' | 'method'> {
@@ -15,6 +16,7 @@ export interface MatchByTypeProps
     | object
     | boolean
     | ((req: Request, res: Response) => void)
+    | MockType
 }
 
 export interface MatchByProps
@@ -26,6 +28,7 @@ export interface MatchByProps
     | object
     | boolean
     | ((req: Request, res: Response) => void)
+    | MockType
 }
 
 function response(
@@ -39,8 +42,9 @@ function response(
   } else {
     res.status(statusCode(code))
     res.set(headers)
+
     if (children) {
-      res.send(children)
+      res.send(transformData(children))
     } else {
       res.end()
     }

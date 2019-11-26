@@ -8,6 +8,7 @@ import {
   MatchByJSON,
   MatchByForm,
   JSONRPC,
+  mock,
 } from './src/index'
 
 export const test = () => {
@@ -36,6 +37,11 @@ export const test = () => {
         <JSONRPC.Method name="hello">hello</JSONRPC.Method>
         <JSONRPC.Method name="world">world</JSONRPC.Method>
         <JSONRPC.Method name="echo">{params => params}</JSONRPC.Method>
+        <JSONRPC.Method name="mock">
+          {mock({
+            'name|1-5': 'str',
+          })}
+        </JSONRPC.Method>
         <JSONRPC.Method name="error">
           {params => {
             throw { message: 'message', code: 123, data: 'error data' }

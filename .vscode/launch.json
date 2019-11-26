@@ -18,7 +18,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Launch Program",
+      "name": "Run Example",
       "runtimeArgs": ["-r", "ts-node/register"],
       "args": ["${workspaceFolder}/test.tsx"]
     }

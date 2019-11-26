@@ -1,10 +1,12 @@
 import { runServer } from './server'
 import { VNode } from './h'
 import { render, validate } from './render'
+import { mock } from './mock'
 
 export * from './h'
 export * from './render'
 export * from './components'
+export { mock }
 
 /**
  * 启动服务器

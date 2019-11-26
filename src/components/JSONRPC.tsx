@@ -2,6 +2,8 @@
 import { h, Children } from '../h'
 import { Request } from '../server'
 import { Post } from './Method'
+import { isMock, MockType } from '../mock'
+import { transformData } from '../utils'
 
 export interface JSONRPCProps {
   path?: string
@@ -18,6 +20,7 @@ export interface JSONRPCMethodProps {
     | object
     // TODO: 异步
     | ((body: any, name: string, req: Request) => any)
+    | MockType
 }
 
 export const JSONRPC = (props: JSONRPCProps) => {
@@ -52,14 +55,15 @@ JSONRPC.Method = (props: JSONRPCMethodProps) => {
           }
 
           let rtn: any
-          if (typeof children === 'function') {
+          if (typeof children === 'function' && !isMock(children)) {
             rtn = children(req.body.params, name, req)
           } else {
             rtn = children
           }
+
           res.send({
             id: req.body?.id,
-            result: rtn,
+            result: transformData(rtn),
           })
         } catch (err) {
           res.send({

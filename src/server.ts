@@ -7,7 +7,7 @@ export { Request, Response }
 
 export type Matcher = (req: Request, res: Response) => boolean
 
-const DEFAULT_PORT = 8888
+const DEFAULT_PORT = 4321
 const DEFAULT_HOST = '0.0.0.0'
 const DEFAULT_HTTPS = false
 
