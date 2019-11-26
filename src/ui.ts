@@ -1,7 +1,7 @@
 import fs, { promises as fp } from 'fs'
 import path from 'path'
 import { transformFileAsync } from '@babel/core'
-import { start } from './index'
+import { start, restart } from './index'
 
 const NAME = '.mocker'
 const EXTS = ['.tsx', '.jsx', '.js']
@@ -50,9 +50,10 @@ function wrapCode(code: string) {
   return eval(wrapped)
 }
 
-function getInitial(fn: Function, filename: string) {
+function getInitial(code: string, filename: string) {
+  const fn = wrapCode(code)
   const module = {
-    exports: {} as any
+    exports: {} as any,
   }
 
   fn(require, module, module.exports, path.dirname(filename), filename)
@@ -76,10 +77,33 @@ export async function tranformAndRun() {
     if (res == null || res.code == null) {
       throw new Error(`failed to transpile ${file}: babel tranform return null`)
     }
-
-    const fn = wrapCode(res.code)
-    const initial = getInitial(fn, file)
+    const initial = getInitial(res.code, file)
     start(initial)
+
+    let compiling = false
+    fs.watchFile(file, async () => {
+      if (compiling) {
+        return
+      }
+
+      try {
+        compiling = true
+        console.log('file change recompiling')
+        const res = await transformFileAsync(file, BabelConfig)
+        if (res == null || res.code == null) {
+          throw new Error(
+            `failed to transpile ${file}: babel tranform return null`,
+          )
+        }
+        const initial = getInitial(res.code, file)
+        restart(initial)
+        console.log('mock config patched')
+      } catch (err) {
+        console.error(err)
+      } finally {
+        compiling = false
+      }
+    })
   } catch (err) {
     console.error(err)
   }

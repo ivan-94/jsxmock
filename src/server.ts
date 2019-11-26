@@ -11,12 +11,24 @@ const DEFAULT_PORT = 4321
 const DEFAULT_HOST = '0.0.0.0'
 const DEFAULT_HTTPS = false
 
+let running = false
+let currentConfig: ServiceConfig
+
+export function patchServer(config: ServiceConfig) {
+  if (!running) {
+    runServer(config)
+  } else {
+    currentConfig = config
+  }
+}
+
 export function runServer(config: ServiceConfig) {
+  currentConfig = config
   const {
     port = DEFAULT_PORT,
     host = DEFAULT_HOST,
     https: enableHTTPS = DEFAULT_HTTPS,
-  } = config.server
+  } = currentConfig.server
   const app = express()
 
   // json 解析
@@ -28,7 +40,7 @@ export function runServer(config: ServiceConfig) {
   app.use((req, res, next) => {
     console.info(`${req.method} ${req.path}`)
     let hit = false
-    for (const m of config.matches) {
+    for (const m of currentConfig.matches) {
       if ((hit = m(req, res))) {
         break
       }
@@ -54,5 +66,6 @@ export function runServer(config: ServiceConfig) {
 
   server.listen(port, host, () => {
     console.log(`Mock 服务器已启动: ${host}:${port}`)
+    running = true
   })
 }
