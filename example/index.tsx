@@ -9,7 +9,7 @@ import {
   MatchByForm,
   JSONRPC,
   mock,
-} from './src/index'
+} from '../src/index'
 
 export const test = () => {
   return (

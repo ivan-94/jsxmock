@@ -20,7 +20,7 @@
       "request": "launch",
       "name": "Run Example",
       "runtimeArgs": ["-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/test.tsx"]
+      "args": ["${workspaceFolder}/example/index.tsx"]
     }
   ]
 }
