@@ -7,11 +7,13 @@ import {
   Instance,
 } from '../render'
 import { Request, Response, Matcher } from '../server'
-import { EMPTY_OBJECT } from '../utils'
+import { EMPTY_OBJECT, statusCode } from '../utils'
+
+export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
 
 export interface MethodProps {
   path?: string
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
+  method?: METHODS
   children?:
     | string
     | number
@@ -23,6 +25,8 @@ export interface MethodProps {
   desc?: string
 }
 
+export type FixedMethodProps = Omit<MethodProps, 'method'>
+
 export const Method: Comp<MethodProps> = props => {
   const {
     method = 'GET',
@@ -32,7 +36,6 @@ export const Method: Comp<MethodProps> = props => {
     headers = EMPTY_OBJECT,
   } = props
   let response: Matcher
-  const ncode = typeof code === 'string' ? parseInt(code, 10) : code
 
   if (children && typeof children === 'function') {
     response = children as Matcher
@@ -60,10 +63,9 @@ export const Method: Comp<MethodProps> = props => {
     }
   } else {
     response = (req, res) => {
-      res.status(ncode)
-      res.set({
-        headers,
-      })
+      res.status(statusCode(code))
+      res.set(headers)
+      // TODO: content type
       if (children) {
         res.send(children)
       } else {
@@ -87,5 +89,18 @@ export const Method: Comp<MethodProps> = props => {
     </match>
   )
 }
+
+function fixedMethod(method: METHODS) {
+  return (props: FixedMethodProps) => {
+    return <Method method={method} {...props} />
+  }
+}
+
+export const Get = fixedMethod('GET')
+export const Post = fixedMethod('POST')
+export const Put = fixedMethod('PUT')
+export const Delete = fixedMethod('DELETE')
+export const Option = fixedMethod('OPTION')
+export const Head = fixedMethod('HEAD')
 
 export default Method

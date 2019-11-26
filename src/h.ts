@@ -21,7 +21,8 @@ export function h<T>(
   ...children: Element<any>[]
 ) {
   const copy: any = props ? { ...props } : {}
-  copy.children = children.length > 1 ? children : children[0]
+  copy.children =
+    copy.children || (children.length > 1 ? children : children[0])
 
   return {
     _vnode: true,

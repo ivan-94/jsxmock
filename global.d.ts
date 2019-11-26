@@ -22,6 +22,7 @@ declare module '@gdjiami/mocker' {
       | string
       | number
       | object
+      | boolean
       | ((req: Request, res: Response) => void)
     code?: number
     desc?: string

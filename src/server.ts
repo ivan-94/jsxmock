@@ -18,6 +18,11 @@ export function runServer(config: ServiceConfig) {
     https: enableHTTPS = DEFAULT_HTTPS,
   } = config.server
   const app = express()
+
+  // json 解析
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: true }))
+
   // TODO: 日志
   // TODO: file watch
   app.use((req, res, next) => {
