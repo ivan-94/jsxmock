@@ -17,6 +17,11 @@ export default () => (
       shit
     </Get>
     <Post headers={{ Test: 'CustomHeader' }}>POST success</Post>
+    <Get path="/user/:id">
+      {(req, res) => {
+        res.send(req.params)
+      }}
+    </Get>
     <Method method="GET" code="200">
       hello world
     </Method>

@@ -143,6 +143,23 @@ export const MatchByJSON: Comp<MatchByTypeProps> = props => {
   )
 }
 
+export const MatchByParams: Comp<MatchByTypeProps> = props => {
+  const { key, value } = props
+  return (
+    <match>
+      {(req, res) => {
+        const src = get(req.params, key)
+        if (isMatch(src, value)) {
+          response(req, res, props)
+          return true
+        }
+
+        return false
+      }}
+    </match>
+  )
+}
+
 export const MatchByForm: Comp<MatchByTypeProps> = props => {
   const { key, value } = props
   return (

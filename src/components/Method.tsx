@@ -1,4 +1,5 @@
 /* @jsx h */
+import { match } from 'path-to-regexp'
 import { h, Comp, Children } from '../h'
 import {
   hasElementChildren,
@@ -43,6 +44,7 @@ export const Method: Comp<MethodProps> = props => {
     headers = EMPTY_OBJECT,
   } = props
   let response: Matcher
+  let pathMatcher = match(path, { decode: decodeURIComponent })
 
   if (children && typeof children === 'function' && !isMock(children)) {
     response = (req, res) => {
@@ -88,9 +90,17 @@ export const Method: Comp<MethodProps> = props => {
     <match>
       {(req, res) => {
         // 判断方法和路径是否匹配
-        // TODO: 路由支持变量
-        if (req.method !== method || req.path !== path) {
+        if (req.method !== method) {
           return false
+        }
+
+        const matched = pathMatcher(req.path)
+        if (!matched) {
+          return false
+        }
+
+        if (matched.params) {
+          Object.assign(req.params, matched.params)
         }
 
         return response(req, res)
