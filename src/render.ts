@@ -1,3 +1,4 @@
+import omit from 'lodash/omit'
 import { VNode, isVNode, PrimitiveElement, Children, Element } from './h'
 import { Request, Response } from './server'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
@@ -15,6 +16,7 @@ export interface MatchConfig {
 }
 
 export interface HostConfig {
+  prefix?: string
   port?: number
   https?: boolean
   host?: string
@@ -92,7 +94,7 @@ export function validate(tree?: Instance | unknown): ServiceConfig {
     throw new Error('mocker 必须为根组件')
   }
 
-  server = tree.props || EMPTY_OBJECT
+  server = omit(tree.props || EMPTY_OBJECT, 'children')
 
   if (tree.children) {
     for (const node of tree.children) {

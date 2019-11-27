@@ -44,6 +44,7 @@ export declare namespace h {
     export interface IntrinsicElements {
       // 核心元素
       mocker: {
+        prefix?: string
         port?: string | number
         host?: string
         https?: boolean
