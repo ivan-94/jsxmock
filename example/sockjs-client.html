@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script>
+      function handle(sock) {
+        sock.onopen = function() {
+          console.log('open')
+          sock.send('ping')
+        }
+
+        sock.onmessage = function(e) {
+          console.log('message', e.data)
+          setTimeout(() => {
+            sock.send('ping')
+          }, 5000)
+        }
+
+        sock.onclose = function() {
+          console.log('close')
+        }
+      }
+
+      const sock = new SockJS('http://localhost:4321/ws')
+      const ws = new WebSocket('ws://localhost:4321/ws/websocket')
+      handle(ws)
+      handle(sock)
+    </script>
+  </body>
+</html>

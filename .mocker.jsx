@@ -52,5 +52,12 @@ export default () => (
         return true
       }}
     </match>
+    <websocket
+      path="/ws"
+      onMessage={(data, conn) => {
+        console.log(data)
+        conn.write('pong')
+      }}
+    />
   </mocker>
 )

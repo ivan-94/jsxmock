@@ -1,6 +1,6 @@
 import omit from 'lodash/omit'
 import { VNode, isVNode, PrimitiveElement, Children, Element } from './h'
-import { Request, Response } from './server'
+import { Request, Response, Connection } from './server'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
 
 export interface Instance {
@@ -24,10 +24,9 @@ export interface HostConfig {
 
 export interface WebSocketConfig {
   path: string
-  onMessage?: (data: any, self: any) => void
-  onConnect?: (self: any) => void
+  onMessage?: (data: any, conn: Connection) => void
+  onConnect?: (conn: Connection) => void
   onClose?: () => void
-  onError?: (err: any) => void
 }
 
 export interface ProxyConfig {}
@@ -110,6 +109,7 @@ export function validate(tree?: Instance | unknown): ServiceConfig {
           matches.push(node.children[0])
           break
         case 'websocket':
+          node.props.path = node.props.path || '/'
           ws.push(node.props)
           break
         case 'proxy':
@@ -119,6 +119,13 @@ export function validate(tree?: Instance | unknown): ServiceConfig {
           throw new Error(`未知组件类型: ${node.type}`)
       }
     }
+  }
+
+  // 验证 websocket 前缀
+  const set = new Set()
+  ws.forEach(i => set.add(i.path || '/'))
+  if (ws.length !== set.size) {
+    throw new Error('websocket 路径不能重复')
   }
 
   return {

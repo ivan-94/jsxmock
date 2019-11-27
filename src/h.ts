@@ -1,4 +1,4 @@
-import { Request, Response } from './server'
+import { Request, Response, Connection } from './server'
 
 export type PrimitiveElement = null | undefined | string | boolean | number
 export type Element<T> = VNode<T> | PrimitiveElement
@@ -50,14 +50,13 @@ export declare namespace h {
         https?: boolean
         children: any
       }
-      match: { children: (req: Request, res: Response) => void }
+      match: { children: (req: Request, res: Response) => boolean }
       proxy: { to: string }
       websocket: {
         path: string
-        onMessage?: (data: any, self: any) => void
-        onConnect?: (self: any) => void
+        onMessage?: (data: any, conn: Connection) => void
+        onConnect?: (conn: Connection) => void
         onClose?: () => void
-        onError?: (err: any) => void
       }
     }
   }
