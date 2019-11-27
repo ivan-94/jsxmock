@@ -1,7 +1,7 @@
 {
   "name": "@gdjiami/mocker",
   "version": "0.1.0",
-  "description": "simple mock server, declare API by JSX",
+  "description": "Simple mock server, declare API by JSX",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
   "scripts": {

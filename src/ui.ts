@@ -4,7 +4,8 @@ import { transformFileAsync } from '@babel/core'
 import { start, restart } from './index'
 
 const NAME = '.mocker'
-const EXTS = ['.tsx', '.jsx', '.js']
+const EXTS = ['.jsx', '.js', '.tsx']
+const cwd = process.cwd()
 
 const BabelConfig = {
   presets: [
@@ -21,8 +22,7 @@ const BabelConfig = {
 /**
  * 查找配置文件
  */
-async function findConfig() {
-  const cwd = process.cwd()
+export async function findConfig(): Promise<string | undefined> {
   let file: string | undefined
   for (const ext of EXTS) {
     const name = NAME + ext
@@ -35,11 +35,11 @@ async function findConfig() {
     }
   }
 
-  if (file == null) {
-    throw new Error(`${NAME}{${EXTS.join('|')}} not found in ${cwd}`)
-  }
+  return file
+}
 
-  return path.join(cwd, file)
+export function getDefaultConfigurationPath() {
+  return path.join(cwd, `${NAME}${EXTS[0]}`)
 }
 
 function wrapCode(code: string) {
@@ -71,40 +71,45 @@ function getInitial(code: string, filename: string) {
 }
 
 export async function tranformAndRun() {
-  const file = await findConfig()
-  try {
-    const res = await transformFileAsync(file, BabelConfig)
-    if (res == null || res.code == null) {
-      throw new Error(`failed to transpile ${file}: babel tranform return null`)
-    }
-    const initial = getInitial(res.code, file)
-    start(initial)
-
-    let compiling = false
-    fs.watchFile(file, async () => {
-      if (compiling) {
-        return
-      }
-
-      try {
-        compiling = true
-        console.log('file change recompiling')
-        const res = await transformFileAsync(file, BabelConfig)
-        if (res == null || res.code == null) {
-          throw new Error(
-            `failed to transpile ${file}: babel tranform return null`,
-          )
-        }
-        const initial = getInitial(res.code, file)
-        restart(initial)
-        console.log('mock config patched')
-      } catch (err) {
-        console.error(err)
-      } finally {
-        compiling = false
-      }
-    })
-  } catch (err) {
-    console.error(err)
+  const filename = await findConfig()
+  if (filename == null) {
+    throw new Error(`${NAME}{${EXTS.join('|')}} not found in ${cwd}`)
   }
+
+  const file = path.join(cwd, filename)
+  let compiling = false
+
+  const res = await transformFileAsync(file, BabelConfig)
+
+  if (res == null || res.code == null) {
+    throw new Error(`failed to transpile ${file}: babel tranform return null`)
+  }
+
+  const initial = getInitial(res.code, file)
+  start(initial)
+
+  // 文件监听
+  fs.watchFile(file, async () => {
+    if (compiling) {
+      return
+    }
+
+    try {
+      compiling = true
+      console.log('file change recompiling')
+      const res = await transformFileAsync(file, BabelConfig)
+      if (res == null || res.code == null) {
+        throw new Error(
+          `failed to transpile ${file}: babel tranform return null`,
+        )
+      }
+      const initial = getInitial(res.code, file)
+      restart(initial)
+      console.log('mock config patched')
+    } catch (err) {
+      console.error(err)
+    } finally {
+      compiling = false
+    }
+  })
 }

@@ -28,6 +28,13 @@
       "name": "Run UI Example",
       "runtimeArgs": ["-r", "ts-node/register"],
       "args": ["${workspaceFolder}/example/ui.tsx"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Run Cmd",
+      "runtimeArgs": ["-r", "ts-node/register"],
+      "args": ["${workspaceFolder}/src/cli.ts", "--init"]
     }
   ]
 }
