@@ -6,6 +6,7 @@ import { start, restart } from './index'
 const NAME = '.mocker'
 const EXTS = ['.jsx', '.js', '.tsx']
 const cwd = process.cwd()
+const pkg = require('../package.json')
 
 const BabelConfig = {
   presets: [
@@ -56,7 +57,22 @@ function getInitial(code: string, filename: string) {
     exports: {} as any,
   }
 
-  fn(require, module, module.exports, path.dirname(filename), filename)
+  const req = (name: string) => {
+    try {
+      return require(name)
+    } catch (err) {
+      if (
+        err.message &&
+        err.message.startsWith('Cannot find module') &&
+        name === pkg.name
+      ) {
+        return require('./index')
+      }
+      throw err
+    }
+  }
+
+  fn(req, module, module.exports, path.dirname(filename), filename)
 
   const res = module.exports?.default || module.exports
   if (res == null) {

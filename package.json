@@ -18,6 +18,9 @@
     "registry": "https://registry.npmjs.org",
     "access": "public"
   },
+  "bin": {
+    "mocker": "./bin/mocker.js"
+  },
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
