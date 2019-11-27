@@ -1,6 +1,9 @@
 import http from 'http'
 import https from 'https'
+import path from 'path'
 import cors from 'cors'
+import os from 'os'
+import multer from 'multer'
 import express, { Request, Response } from 'express'
 import isEqual from 'lodash/isEqual'
 import sockjs, { Connection } from 'sockjs'
@@ -9,6 +12,8 @@ import { ServiceConfig, WebSocketConfig } from './render'
 export { Request, Response, Connection }
 
 export type Matcher = (req: Request, res: Response) => boolean
+
+export type MulterFile = Express.Multer.File
 
 const DEFAULT_PORT = 4321
 const DEFAULT_HOST = '0.0.0.0'
@@ -84,11 +89,15 @@ export function runServer(config: ServiceConfig) {
   // TODO: 端口查找
   const app = express()
   server = enableHTTPS ? https.createServer(app) : http.createServer(app)
+  const mul = multer({
+    dest: path.join(os.tmpdir(), 'mocker'),
+  })
 
   // json 解析
   app.use(cors())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
+  app.use(mul.any())
 
   const router = express.Router()
 

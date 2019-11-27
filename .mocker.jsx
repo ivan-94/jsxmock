@@ -4,6 +4,7 @@ import {
   Method,
   Get,
   Post,
+  Upload,
   MatchByJSON,
   MatchByForm,
   JSONRPC,
@@ -46,6 +47,12 @@ export default () => (
         }}
       </JSONRPC.Method>
     </JSONRPC>
+    <Upload path="/upload">
+      {(req, res, params) => {
+        console.log(params)
+        res.send('uploaded')
+      }}
+    </Upload>
     <match>
       {(req, res) => {
         res.status(500).send('Mock Server Error')

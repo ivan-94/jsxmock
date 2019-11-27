@@ -14,3 +14,7 @@ export function transformData(data: any) {
 
   return data
 }
+
+export function normalizedMatchReturn(rtn: any) {
+  return rtn !== false
+}

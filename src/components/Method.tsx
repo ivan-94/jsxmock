@@ -7,7 +7,12 @@ import {
   Instance,
 } from '../render'
 import { Request, Response, Matcher } from '../server'
-import { EMPTY_OBJECT, statusCode, transformData } from '../utils'
+import {
+  EMPTY_OBJECT,
+  statusCode,
+  transformData,
+  normalizedMatchReturn,
+} from '../utils'
 import { isMock, MockType } from '../mock'
 
 export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
@@ -19,7 +24,7 @@ export interface MethodProps {
     | string
     | number
     | object
-    | ((req: Request, res: Response) => void)
+    | ((req: Request, res: Response) => void | boolean)
     | MockType
     | Children
   headers?: { [key: string]: string }
@@ -40,7 +45,9 @@ export const Method: Comp<MethodProps> = props => {
   let response: Matcher
 
   if (children && typeof children === 'function' && !isMock(children)) {
-    response = children as Matcher
+    response = (req, res) => {
+      return normalizedMatchReturn(children(req, res))
+    }
   } else if (hasElementChildren(props.children)) {
     // FIXME: 这里耦合组件渲染细节
     const submatchs = renderChilren(props.children).filter(i =>
@@ -57,7 +64,7 @@ export const Method: Comp<MethodProps> = props => {
     response = (req, res) => {
       for (const child of submatchs) {
         const rep = child!.children![0] as Matcher
-        if (rep(req, res)) {
+        if (normalizedMatchReturn(rep(req, res))) {
           return true
         }
       }
