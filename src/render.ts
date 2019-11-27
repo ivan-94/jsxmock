@@ -106,7 +106,9 @@ export function validate(tree?: Instance | unknown): ServiceConfig {
           if (node.children == null || typeof node.children[0] !== 'function') {
             throw new Error('match children 不能为空, 且必须为函数')
           }
-          matches.push(node.children[0])
+          if (!node.props.skip) {
+            matches.push(node.children[0])
+          }
           break
         case 'websocket':
           node.props.path = node.props.path || '/'

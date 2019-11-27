@@ -50,7 +50,10 @@ export declare namespace h {
         https?: boolean
         children: any
       }
-      match: { children: (req: Request, res: Response) => boolean }
+      match: {
+        children: (req: Request, res: Response) => boolean
+        skip?: boolean
+      }
       proxy: { to: string }
       websocket: {
         path: string

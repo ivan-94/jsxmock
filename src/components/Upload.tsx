@@ -3,7 +3,7 @@ import { h, Comp } from '../h'
 import { Request, Response, MulterFile } from '../server'
 import { Post, FixedMethodProps } from './Method'
 import { MockType, isMock } from '../mock'
-import { EMPTY_OBJECT, EMPTY_ARRAY } from '../utils'
+import { EMPTY_OBJECT, EMPTY_ARRAY, normalizedMatchReturn } from '../utils'
 
 export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
   children?:
@@ -41,7 +41,7 @@ export const Upload: Comp<UploadProps> = props => {
             }
           })
 
-          return children(req, res, params)
+          return normalizedMatchReturn(children(req, res, params))
         }
       : children
 

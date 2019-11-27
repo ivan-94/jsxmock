@@ -13,6 +13,7 @@ import {
   statusCode,
   transformData,
   normalizedMatchReturn,
+  FUNC_RTN_FALSE,
 } from '../utils'
 import { isMock, MockType } from '../mock'
 
@@ -21,6 +22,7 @@ export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
 export interface MethodProps {
   path?: string
   method?: METHODS
+  skip?: boolean
   children?:
     | string
     | number
@@ -42,6 +44,7 @@ export const Method: Comp<MethodProps> = props => {
     code = 200,
     children,
     headers = EMPTY_OBJECT,
+    skip,
   } = props
   let response: Matcher
   let pathMatcher = match(path, { decode: decodeURIComponent })
@@ -52,8 +55,8 @@ export const Method: Comp<MethodProps> = props => {
     }
   } else if (hasElementChildren(props.children)) {
     // FIXME: 这里耦合组件渲染细节
-    const submatchs = renderChilren(props.children).filter(i =>
-      isInstance(i),
+    const submatchs = renderChilren(props.children).filter(
+      i => isInstance(i) && !i.props.skip,
     ) as Instance[]
 
     // submatchs validate
@@ -63,15 +66,17 @@ export const Method: Comp<MethodProps> = props => {
       }
     })
 
-    response = (req, res) => {
-      for (const child of submatchs) {
-        const rep = child!.children![0] as Matcher
-        if (normalizedMatchReturn(rep(req, res))) {
-          return true
+    response = submatchs.length
+      ? (req, res) => {
+          for (const child of submatchs) {
+            const rep = child!.children![0] as Matcher
+            if (normalizedMatchReturn(rep(req, res))) {
+              return true
+            }
+          }
+          return false
         }
-      }
-      return false
-    }
+      : FUNC_RTN_FALSE
   } else {
     response = (req, res) => {
       res.status(statusCode(code))
@@ -87,7 +92,7 @@ export const Method: Comp<MethodProps> = props => {
   }
 
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         // 判断方法和路径是否匹配
         if (req.method !== method) {

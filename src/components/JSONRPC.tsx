@@ -6,6 +6,7 @@ import { isMock, MockType } from '../mock'
 import { transformData } from '../utils'
 
 export interface JSONRPCProps {
+  skip?: boolean
   path?: string
   desc?: string
   children: Children
@@ -13,6 +14,7 @@ export interface JSONRPCProps {
 
 export interface JSONRPCMethodProps {
   name: string
+  skip?: boolean
   children:
     | boolean
     | string
@@ -24,18 +26,13 @@ export interface JSONRPCMethodProps {
 }
 
 export const JSONRPC = (props: JSONRPCProps) => {
-  const { path, children } = props
-  return (
-    <Post path={path} code={200}>
-      {children}
-    </Post>
-  )
+  return <Post code={200} {...props}></Post>
 }
 
 JSONRPC.Method = (props: JSONRPCMethodProps) => {
-  const { name, children } = props
+  const { name, children, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         res.status(200)
 

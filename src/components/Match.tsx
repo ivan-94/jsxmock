@@ -3,31 +3,38 @@ import get from 'lodash/get'
 import { h, Comp } from '../h'
 import { Request, Response } from '../server'
 import { MethodProps } from './Method'
-import { EMPTY_OBJECT, statusCode, transformData } from '../utils'
+import {
+  EMPTY_OBJECT,
+  statusCode,
+  transformData,
+  normalizedMatchReturn,
+} from '../utils'
 import { MockType } from '../mock'
 
 export interface MatchByTypeProps
   extends Omit<MethodProps, 'children' | 'path' | 'method'> {
   key: string
   value: any | ((value: any) => boolean)
+  skip?: boolean
   children?:
     | string
     | number
     | object
     | boolean
-    | ((req: Request, res: Response) => void)
+    | ((req: Request, res: Response) => void | boolean)
     | MockType
 }
 
 export interface MatchByProps
   extends Omit<MethodProps, 'children' | 'path' | 'method'> {
   match?: (req: Request, res: Response) => boolean
+  skip?: boolean
   children?:
     | string
     | number
     | object
     | boolean
-    | ((req: Request, res: Response) => void)
+    | ((req: Request, res: Response) => void | boolean)
     | MockType
 }
 
@@ -37,8 +44,9 @@ function response(
   props: MatchByTypeProps | MatchByProps,
 ) {
   const { children, code = 200, headers = EMPTY_OBJECT } = props
+
   if (children && typeof children === 'function') {
-    return children(req, res)
+    return normalizedMatchReturn(children(req, res))
   } else {
     res.status(statusCode(code))
     res.set(headers)
@@ -48,6 +56,7 @@ function response(
     } else {
       res.end()
     }
+    return true
   }
 }
 
@@ -58,15 +67,13 @@ function isMatch(src: any, value: any | ((value: any) => boolean)) {
   return src === value
 }
 
-// TODO: 必须在 Method 下面
 export const MatchBy: Comp<MatchByProps> = props => {
-  const { match } = props
+  const { match, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         if (match ? match(req, res) : true) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -76,14 +83,13 @@ export const MatchBy: Comp<MatchByProps> = props => {
 }
 
 export const MatchByHeader: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = req.get(key)
         if (isMatch(src, value)) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -93,14 +99,13 @@ export const MatchByHeader: Comp<MatchByTypeProps> = props => {
 }
 
 export const MatchBySearch: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = get(req.query, key)
         if (isMatch(src, value)) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -110,14 +115,13 @@ export const MatchBySearch: Comp<MatchByTypeProps> = props => {
 }
 
 export const MatchByBody: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = get(req.body, key)
         if (isMatch(src, value)) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -127,14 +131,13 @@ export const MatchByBody: Comp<MatchByTypeProps> = props => {
 }
 
 export const MatchByJSON: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = get(req.body, key)
         if (req.is('json') && isMatch(src, value)) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -144,14 +147,13 @@ export const MatchByJSON: Comp<MatchByTypeProps> = props => {
 }
 
 export const MatchByParams: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = get(req.params, key)
         if (isMatch(src, value)) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
@@ -161,17 +163,16 @@ export const MatchByParams: Comp<MatchByTypeProps> = props => {
 }
 
 export const MatchByForm: Comp<MatchByTypeProps> = props => {
-  const { key, value } = props
+  const { key, value, skip } = props
   return (
-    <match>
+    <match skip={skip}>
       {(req, res) => {
         const src = get(req.body, key)
         if (
           req.is('application/x-www-form-urlencoded') &&
           isMatch(src, value)
         ) {
-          response(req, res, props)
-          return true
+          return response(req, res, props)
         }
 
         return false
