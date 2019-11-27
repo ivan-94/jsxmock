@@ -6,10 +6,12 @@ const temp = `
 /* @jsx h */
 import { h, Get, Post } from '@gdjiami/mocker'
 
-export default = () => (
+export default () => (
   <mocker port="4321">
     <Get>hello world</Get>
-    <Get path="/foo" code="400">foo</Get>
+    <Get path="/foo" code="400">
+      foo
+    </Get>
     <Post path="/bar">bar</Post>
   </mocker>
 )

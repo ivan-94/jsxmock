@@ -7,16 +7,19 @@ const NAME = '.mocker'
 const EXTS = ['.jsx', '.js', '.tsx']
 const cwd = process.cwd()
 const pkg = require('../package.json')
+const customPaths = [cwd, path.join(__dirname, '../node_modules')]
+
+const resolve = (name: string) => require.resolve(name, { paths: customPaths })
 
 const BabelConfig = {
   presets: [
-    ['@babel/preset-env', { targets: { node: 'current' } }],
-    '@babel/preset-typescript',
+    [resolve('@babel/preset-env'), { targets: { node: 'current' } }],
+    resolve('@babel/preset-typescript'),
   ],
   plugins: [
-    '@babel/plugin-transform-react-jsx',
-    '@babel/plugin-proposal-optional-chaining',
-    '@babel/plugin-proposal-nullish-coalescing-operator',
+    resolve('@babel/plugin-transform-react-jsx'),
+    resolve('@babel/plugin-proposal-optional-chaining'),
+    resolve('@babel/plugin-proposal-nullish-coalescing-operator'),
   ],
 }
 
