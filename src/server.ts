@@ -11,8 +11,6 @@ import { ServiceConfig, WebSocketConfig, runMiddlewares } from './runner'
 
 export { Request, Response, Connection }
 
-export type Matcher = (req: Request, res: Response) => boolean
-
 export type MulterFile = Express.Multer.File
 
 const DEFAULT_PORT = 4321

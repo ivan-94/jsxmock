@@ -48,12 +48,12 @@ export const test = () => {
           }}
         </JSONRPC.Method>
       </JSONRPC>
-      <match>
-        {(req, res) => {
+      <use
+        m={async (req, res) => {
           res.status(500).send('Mock Server Error')
           return true
         }}
-      </match>
+      ></use>
     </server>
   )
 }

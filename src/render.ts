@@ -1,4 +1,4 @@
-import { VNode, isVNode, Primitive, Element, Component } from './h'
+import { VNode, isVNode, Element, Component } from './h'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
 
 /**
@@ -99,7 +99,7 @@ function renderChilren(children: any, inst: Instance) {
   }
 }
 
-export function render(vnode: VNode | Primitive, parent?: Instance): Instance {
+export function render(vnode: VNode | unknown, parent?: Instance): Instance {
   const inst = createInstance(vnode)
 
   if (parent) {

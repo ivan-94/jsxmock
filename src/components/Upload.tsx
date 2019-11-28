@@ -1,9 +1,10 @@
 /* @jsx h */
-import { h, Component } from '../h'
+import { h } from '../h'
 import { Request, Response, MulterFile } from '../server'
 import { Post, FixedMethodProps } from './Method'
 import { MockType, isMock } from '../mock'
-import { EMPTY_OBJECT, EMPTY_ARRAY, normalizedMatchReturn } from '../utils'
+import { normalizedMatcherReturn, MiddlewareMatcherReturn } from '../runner'
+import { EMPTY_OBJECT, EMPTY_ARRAY } from '../utils'
 
 export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
   children?:
@@ -14,14 +15,14 @@ export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
         req: Request,
         res: Response,
         params: { [key: string]: string | MulterFile[] },
-      ) => void | boolean)
+      ) => MiddlewareMatcherReturn)
     | MockType
 }
 
 /**
  * 文件上传
  */
-export const Upload: Component<UploadProps> = props => {
+export const Upload = (props: UploadProps) => {
   const { children, ...other } = props
   const response =
     typeof children === 'function' && !isMock(children)
@@ -41,7 +42,7 @@ export const Upload: Component<UploadProps> = props => {
             }
           })
 
-          return normalizedMatchReturn(children(req, res, params))
+          return normalizedMatcherReturn(children(req, res, params))
         }
       : children
 

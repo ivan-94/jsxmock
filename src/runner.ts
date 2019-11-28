@@ -1,6 +1,7 @@
 import omit from 'lodash/omit'
 import { Request, Response, Connection } from './server'
 import { Instance, isInstance, NodeType } from './render'
+import { isPromise } from './utils'
 
 /**
  * @param req express 请求对象
@@ -21,6 +22,15 @@ export interface Middlewares {
   skip: boolean
   children: Middlewares[] | null
 }
+
+/**
+ * 返回 false 表示跳过 不匹配
+ */
+export type MiddlewareMatcherReturn = Promise<false | void> | false | void
+export type MiddlewareMatcher = (
+  req: Request,
+  res: Response,
+) => MiddlewareMatcherReturn
 
 export interface HostConfig {
   prefix?: string
@@ -43,6 +53,13 @@ export interface ServiceConfig {
 }
 
 export const NoopMiddleware: Middleware = (req, res, next) => next()
+
+/**
+ * 规范化 Matcher 返回值为规范的 middleware 返回值
+ */
+export async function normalizedMatcherReturn(rtn: any) {
+  return isPromise(rtn) ? rtn.then(i => i !== false) : rtn !== false
+}
 
 function createMiddlewares(cb: Middleware, parent?: Middlewares) {
   return {

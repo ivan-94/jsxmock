@@ -2,10 +2,9 @@ import { Connection } from './server'
 import { EMPTY_OBJECT } from './utils'
 import { Middleware } from './runner'
 
-export type Primitive = null | undefined | string | boolean | number
-export type Element<T = {}> = VNode<T> | Primitive
-export type Children = Element<any>[]
-export type Component<T = {}> = (props: T) => Element<T>
+export type Element<T = {}> = VNode<T> | unknown
+export type PropsWithChildren<P> = P & { children: Element }
+export type Component<T = {}> = (props: PropsWithChildren<T>) => Element<T>
 
 export interface VNode<P = {}> {
   _vnode: true
@@ -15,6 +14,16 @@ export interface VNode<P = {}> {
 
 export function isVNode(type: any): type is VNode<any> {
   return type && type._vnode
+}
+
+/**
+ * 判断children 中是否包含组件
+ * @param children
+ */
+export function hasVNode(children: any) {
+  return !!children && Array.isArray(children)
+    ? children.some(isVNode)
+    : isVNode(children)
 }
 
 /**

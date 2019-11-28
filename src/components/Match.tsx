@@ -1,182 +1,74 @@
 /* @jsx h */
-import get from 'lodash/get'
-import { h, Component } from '../h'
+import { h, Component, hasVNode } from '../h'
 import { Request, Response } from '../server'
-import { MethodProps } from './Method'
+import { statusCode, transformData } from '../utils'
+import { MockType, isMock } from '../mock'
 import {
-  EMPTY_OBJECT,
-  statusCode,
-  transformData,
-  normalizedMatchReturn,
-} from '../utils'
-import { MockType } from '../mock'
+  Middleware,
+  MiddlewareMatcher,
+  normalizedMatcherReturn,
+} from '../runner'
 
-export interface MatchByTypeProps
-  extends Omit<MethodProps, 'children' | 'path' | 'method'> {
-  key: string
-  value: any | ((value: any) => boolean)
-  skip?: boolean
-  children?:
-    | string
-    | number
-    | object
-    | boolean
-    | ((req: Request, res: Response) => void | boolean)
-    | MockType
-}
-
-export interface MatchByProps
-  extends Omit<MethodProps, 'children' | 'path' | 'method'> {
+export interface MatchProps {
   match?: (req: Request, res: Response) => boolean
   skip?: boolean
+  headers?: { [key: string]: string }
+  code?: number | string
+  desc?: string
   children?:
     | string
     | number
     | object
     | boolean
-    | ((req: Request, res: Response) => void | boolean)
+    | MiddlewareMatcher
     | MockType
+    | unknown
 }
 
-function response(
-  req: Request,
-  res: Response,
-  props: MatchByTypeProps | MatchByProps,
-) {
-  const { children, code = 200, headers = EMPTY_OBJECT } = props
+/**
+ * 底层 Match 组件
+ */
+export const Match: Component<MatchProps> = props => {
+  const { match, skip, children, code = 200, headers } = props
+  let response: Middleware | null = null
 
-  if (children && typeof children === 'function') {
-    return normalizedMatchReturn(children(req, res))
-  } else {
-    res.status(statusCode(code))
-    res.set(headers)
+  if (children && typeof children === 'function' && !isMock(children)) {
+    // 自定义响应
+    response = (req, res) => normalizedMatcherReturn(children(req, res))
+  } else if (!hasVNode(children)) {
+    // 固定响应
+    response = async (req, res) => {
+      res.status(statusCode(code))
 
-    if (children) {
-      res.send(transformData(children))
-    } else {
-      res.end()
+      if (headers) {
+        res.set(headers)
+      }
+
+      if (children) {
+        const data = await transformData(children)
+        res.send(data)
+      } else {
+        res.end()
+      }
+      return true
     }
-    return true
   }
-}
 
-function isMatch(src: any, value: any | ((value: any) => boolean)) {
-  if (typeof value === 'function') {
-    return !!value(src)
-  }
-  return src === value
-}
-
-export const MatchBy: Component<MatchByProps> = props => {
-  const { match, skip } = props
   return (
-    <match skip={skip}>
-      {(req, res) => {
+    <use
+      skip={skip}
+      m={async (req, res, rec) => {
         if (match ? match(req, res) : true) {
-          return response(req, res, props)
+          if (response) {
+            return response(req, res, rec)
+          }
+          return rec()
         }
 
         return false
       }}
-    </match>
-  )
-}
-
-export const MatchByHeader: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = req.get(key)
-        if (isMatch(src, value)) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
-  )
-}
-
-export const MatchBySearch: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = get(req.query, key)
-        if (isMatch(src, value)) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
-  )
-}
-
-export const MatchByBody: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = get(req.body, key)
-        if (isMatch(src, value)) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
-  )
-}
-
-export const MatchByJSON: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = get(req.body, key)
-        if (req.is('json') && isMatch(src, value)) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
-  )
-}
-
-export const MatchByParams: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = get(req.params, key)
-        if (isMatch(src, value)) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
-  )
-}
-
-export const MatchByForm: Component<MatchByTypeProps> = props => {
-  const { key, value, skip } = props
-  return (
-    <match skip={skip}>
-      {(req, res) => {
-        const src = get(req.body, key)
-        if (
-          req.is('application/x-www-form-urlencoded') &&
-          isMatch(src, value)
-        ) {
-          return response(req, res, props)
-        }
-
-        return false
-      }}
-    </match>
+    >
+      {children}
+    </use>
   )
 }
