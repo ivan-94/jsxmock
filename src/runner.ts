@@ -2,11 +2,18 @@ import omit from 'lodash/omit'
 import { Request, Response, Connection } from './server'
 import { Instance, isInstance, NodeType } from './render'
 
+/**
+ * @param req express 请求对象
+ * @param res express 响应对象
+ * @param recurse 递归执行下级中间件, 返回一个boolean，表示下级是否中间件匹配。如果下级组件执行错误，这里也会抛出异常，可以使用try/catch 包裹
+ * @returns 返回一个 boolean 表示是否匹配，如果匹配，后续的中间件将不会被执行
+ */
 export type Middleware = (
   req: Request,
   res: Response,
-  match: (matched?: boolean) => Promise<boolean>,
-) => Promise<any>
+  // 递归
+  recurse: () => Promise<boolean>,
+) => Promise<boolean>
 
 export interface Middlewares {
   m: Middleware
@@ -35,7 +42,7 @@ export interface ServiceConfig {
   ws: Map<string, WebSocketConfig>
 }
 
-export const NoopMiddleware: Middleware = async (req, res, next) => next(true)
+export const NoopMiddleware: Middleware = (req, res, next) => next()
 
 function createMiddlewares(cb: Middleware, parent?: Middlewares) {
   return {
@@ -83,7 +90,7 @@ export function transformTree(tree: Instance | unknown): ServiceConfig {
         const config = { ...current.props }
         const path = (config.path = config.path || '/')
         if (ws.has(path)) {
-          console.warn(`websocket path conflicted: ${path}`)
+          console.warn(`websocket path conflict: ${path}`)
         }
         ws.set(path, config)
         break
@@ -128,37 +135,20 @@ export async function runMiddlewares(
     return false
   }
 
-  return new Promise((resolve, reject) => {
-    current
-      .m(req, res, async matched => {
+  return current.m(req, res, async () => {
+    if (current.children && current.children.length) {
+      // 递归匹配子节点
+      for (const child of current.children) {
+        const matched = await runMiddlewares(req, res, child)
         if (matched) {
-          if (current.children && current.children.length) {
-            // 递归匹配子节点
-            try {
-              for (const child of current.children) {
-                const matched = await runMiddlewares(req, res, child)
-                if (matched) {
-                  resolve(true)
-                  return true
-                }
-              }
-
-              // 所有子节点都没有匹配
-              resolve(false)
-              return false
-            } catch (err) {
-              reject(err)
-              throw err
-            }
-          }
-          // 没有子节点, 直接匹配
-          resolve(true)
           return true
         }
+      }
 
-        resolve(false)
-        return false
-      })
-      .catch(reject)
+      // 所有子节点都没有匹配
+      return false
+    }
+
+    return false
   })
 }
