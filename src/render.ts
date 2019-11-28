@@ -1,5 +1,15 @@
-import { VNode, isVNode, Element, Component } from './h'
+import omit from 'lodash/omit'
+import { isVNode } from './h'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
+import {
+  Middleware,
+  Middlewares,
+  WebSocketConfig,
+  HostConfig,
+  VNode,
+  Element,
+  Component,
+} from './type'
 
 /**
  * 节点类型
@@ -31,6 +41,8 @@ export interface Instance {
   sibling: Instance | null
 }
 
+export const NoopMiddleware: Middleware = (req, res, next) => next()
+
 const BuildinElements: { [type: string]: NodeType } = {
   server: NodeType.Server,
   use: NodeType.Use,
@@ -38,7 +50,7 @@ const BuildinElements: { [type: string]: NodeType } = {
   fragment: NodeType.Fragment,
 }
 
-export function isInstance(t: any): t is Instance {
+function isInstance(t: any): t is Instance {
   return t && t._inst
 }
 
@@ -79,6 +91,15 @@ function createInstance<T = {}>(vnode: VNode<T> | unknown): Instance {
   }
 }
 
+function createMiddlewares(cb: Middleware, parent?: Middlewares) {
+  return {
+    m: cb,
+    parent: parent || null,
+    skip: false,
+    children: [],
+  }
+}
+
 function childrenToArray(children?: Element<any> | Element<any>[]) {
   return children
     ? Array.isArray(children)
@@ -87,11 +108,11 @@ function childrenToArray(children?: Element<any> | Element<any>[]) {
     : EMPTY_ARRAY
 }
 
-function renderChilren(children: any, parent: Instance) {
+function mountChilren(children: any, parent: Instance) {
   const ls = childrenToArray(children)
   let prev: Instance | undefined
   for (const item of ls) {
-    const rtn = render(item, parent)
+    const rtn = mount(item, parent)
     if (prev != null) {
       prev.sibling = rtn
     }
@@ -99,8 +120,12 @@ function renderChilren(children: any, parent: Instance) {
   }
 }
 
-export function render(vnode: VNode | unknown, parent?: Instance): Instance {
+let currentMiddlewares: Middlewares
+let currentWs: Map<string, WebSocketConfig>
+let md: Middlewares
+function mount(vnode: VNode | unknown, parent?: Instance): Instance {
   const inst = createInstance(vnode)
+  let prevMiddlewares: Middlewares
 
   if (parent) {
     inst.return = parent
@@ -114,12 +139,56 @@ export function render(vnode: VNode | unknown, parent?: Instance): Instance {
   } else if (inst.tag === NodeType.Custom) {
     // custom component
     const rtn = (inst.type as Component)(inst.props)
-    render(rtn, inst)
+    mount(rtn, inst)
     return inst
   }
 
+  if (inst.tag === NodeType.Use) {
+    // 收集中间件
+    prevMiddlewares = currentMiddlewares
+    md = createMiddlewares(inst.props.m, currentMiddlewares)
+    md.skip = !!inst.props.skip
+    currentMiddlewares.children.push(md)
+    currentMiddlewares = md
+  } else if (inst.tag === NodeType.WebSocket) {
+    // 收集websocket
+    const config = { ...inst.props }
+    const path = (config.path = config.path || '/')
+    if (currentWs.has(path)) {
+      console.warn(`websocket path conflict: ${path}`)
+    }
+    currentWs.set(path, config)
+  }
+
   // host component
-  renderChilren(inst.props.children, inst)
+  mountChilren(inst.props.children, inst)
+
+  if (inst.tag === NodeType.Use) {
+    currentMiddlewares = prevMiddlewares!
+  }
 
   return inst
+}
+
+export function render(vnode: VNode | unknown) {
+  const server: HostConfig = {}
+  const middlewares: Middlewares = (currentMiddlewares = createMiddlewares(
+    NoopMiddleware,
+  ))
+  const ws: Map<string, WebSocketConfig> = (currentWs = new Map())
+
+  const tree = render(vnode)
+
+  // validate
+  if (!isInstance(tree) || tree.tag !== NodeType.Server) {
+    throw new Error('root node must be <server>')
+  }
+
+  Object.assign(server, omit(tree.props, 'children'))
+
+  return {
+    server,
+    middlewares,
+    ws,
+  }
 }

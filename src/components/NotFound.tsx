@@ -1,6 +1,6 @@
 /* @jsx h */
-import { h, Component } from '../h'
-import { Request, Response } from '../server'
+import { h } from '../h'
+import { Request, Response, Component } from '../type'
 
 export interface NotFoundProps {
   onNotFound: (req: Request, res: Response) => Promise<boolean>

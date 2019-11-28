@@ -4,14 +4,11 @@ import path from 'path'
 import cors from 'cors'
 import os from 'os'
 import multer from 'multer'
-import express, { Request, Response } from 'express'
+import express from 'express'
 import isEqual from 'lodash/isEqual'
 import sockjs, { Connection } from 'sockjs'
-import { ServiceConfig, WebSocketConfig, runMiddlewares } from './runner'
-
-export { Request, Response, Connection }
-
-export type MulterFile = Express.Multer.File
+import { runMiddlewares } from './runner'
+import { ServiceConfig, WebSocketConfig } from './type'
 
 const DEFAULT_PORT = 4321
 const DEFAULT_HOST = '0.0.0.0'

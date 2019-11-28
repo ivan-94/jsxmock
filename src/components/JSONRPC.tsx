@@ -1,6 +1,6 @@
 /* @jsx h */
-import { h, VNode } from '../h'
-import { Request } from '../server'
+import { h } from '../h'
+import { Request, VNode } from '../type'
 import { Post, MethodProps } from './Method'
 import { isMock, MockType } from '../mock'
 import { transformData } from '../utils'

@@ -1,6 +1,6 @@
 /* @jsx h */
-import { h, Component } from '../h'
-import { Request, Response } from '../server'
+import { h } from '../h'
+import { Component, Request, Response } from '../type'
 
 export interface CatchProps {
   onError: (err: any, req: Request, res: Response) => void

@@ -1,48 +1,23 @@
-import {
-  runServer,
-  patchServer,
-  Request,
-  Response,
-  Connection,
-  MulterFile,
-} from './server'
-import { VNode } from './h'
+import { runServer, patchServer } from './server'
 import { render } from './render'
-import {
-  transformTree,
-  Middleware,
-  MiddlewareMatcher,
-  MiddlewareMatcherReturn,
-  normalizedMatcherReturn,
-} from './runner'
+import { normalizedMatcherReturn } from './runner'
 import { mock } from './mock'
+import { VNode } from './type'
 
+export * from './type'
 export * from './h'
-export * from './render'
 export * from './components'
-export {
-  mock,
-  Request,
-  Response,
-  Connection,
-  Middleware,
-  MiddlewareMatcher,
-  MiddlewareMatcherReturn,
-  MulterFile,
-  normalizedMatcherReturn,
-}
+export { mock, normalizedMatcherReturn }
 
 /**
  * 启动服务器
  */
 export function start(root: () => VNode<any>) {
-  const tree = render(root())
-  const config = transformTree(tree)
+  const config = render(root())
   runServer(config)
 }
 
 export function restart(root: () => VNode<any>) {
-  const tree = render(root())
-  const config = transformTree(tree)
+  const config = render(root())
   patchServer(config)
 }

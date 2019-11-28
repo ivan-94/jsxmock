@@ -1,16 +1,5 @@
-import { Connection } from './server'
 import { EMPTY_OBJECT } from './utils'
-import { Middleware } from './runner'
-
-export type Element<T = {}> = VNode<T> | unknown
-export type PropsWithChildren<P> = P & { children: Element }
-export type Component<T = {}> = (props: PropsWithChildren<T>) => Element<T>
-
-export interface VNode<P = {}> {
-  _vnode: true
-  type: Component<P> | string
-  props: P & { children: Element<any>[] | Element<any> }
-}
+import { Middleware, Connection, VNode, Component, Element } from './type'
 
 export function isVNode(type: any): type is VNode<any> {
   return type && type._vnode
@@ -32,7 +21,7 @@ export function hasVNode(children: any) {
 export function createElement<T>(
   type: string | Component<T>,
   props: T | null,
-  ...children: Element<any>[]
+  ...children: Element[]
 ): VNode<T> {
   const copy: any = { ...(props || EMPTY_OBJECT) }
   copy.children =

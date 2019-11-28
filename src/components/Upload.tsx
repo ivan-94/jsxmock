@@ -1,10 +1,10 @@
 /* @jsx h */
 import { h } from '../h'
-import { Request, Response, MulterFile } from '../server'
-import { Post, FixedMethodProps } from './Method'
+import { Request, Response, MulterFile, MiddlewareMatcherReturn } from '../type'
 import { MockType, isMock } from '../mock'
-import { normalizedMatcherReturn, MiddlewareMatcherReturn } from '../runner'
+import { normalizedMatcherReturn } from '../runner'
 import { EMPTY_OBJECT, EMPTY_ARRAY } from '../utils'
+import { Post, FixedMethodProps } from './Method'
 
 export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
   children?:

@@ -1,7 +1,7 @@
 /* @jsx h */
 import { h } from '../src/h'
 import { render } from '../src/render'
-import { transformTree, runMiddlewares } from '../src/runner'
+import { runMiddlewares } from '../src/runner'
 
 const comp = (
   <server>
@@ -46,6 +46,5 @@ const comp = (
   </server>
 )
 
-const r = render(comp)
-const c = transformTree(r)
+const c = render(comp)
 runMiddlewares({} as any, {} as any, c.middlewares)

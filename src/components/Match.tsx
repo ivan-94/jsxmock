@@ -1,13 +1,15 @@
 /* @jsx h */
-import { h, Component, hasVNode } from '../h'
-import { Request, Response } from '../server'
-import { statusCode, transformData } from '../utils'
-import { MockType, isMock } from '../mock'
+import { h, hasVNode } from '../h'
 import {
+  Request,
+  Response,
+  Component,
   Middleware,
   MiddlewareMatcher,
-  normalizedMatcherReturn,
-} from '../runner'
+} from '../type'
+import { statusCode, transformData } from '../utils'
+import { MockType, isMock } from '../mock'
+import { normalizedMatcherReturn } from '../runner'
 
 export interface MatchProps {
   match?: (req: Request, res: Response) => boolean

@@ -1,7 +1,7 @@
 /* @jsx h */
 import get from 'lodash/get'
-import { h, Component } from '../h'
-import { Request } from '../server'
+import { h } from '../h'
+import { Request, Component } from '../type'
 import { MatchProps, Match } from './Match'
 
 function isMatch(src: any, value: any | ((value: any) => boolean)) {

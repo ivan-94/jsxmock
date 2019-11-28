@@ -1,7 +1,7 @@
 /* @jsx h */
 import { match } from 'path-to-regexp'
-import { h, Component, PropsWithChildren } from '../h'
-
+import { h } from '../h'
+import { Component, PropsWithChildren } from '../type'
 import { Match, MatchProps } from './Match'
 
 export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
