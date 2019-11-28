@@ -1,6 +1,6 @@
 /* @jsx h */
 import { match } from 'path-to-regexp'
-import { h, Comp, Children } from '../h'
+import { h, Component, Children } from '../h'
 import {
   hasElementChildren,
   renderChilren,
@@ -37,7 +37,7 @@ export interface MethodProps {
 
 export type FixedMethodProps = Omit<MethodProps, 'method'>
 
-export const Method: Comp<MethodProps> = props => {
+export const Method: Component<MethodProps> = props => {
   const {
     method = 'GET',
     path = '/',

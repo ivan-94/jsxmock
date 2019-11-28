@@ -1,5 +1,5 @@
 /* @jsx h */
-import { h, Comp } from '../h'
+import { h, Component } from '../h'
 import { Request, Response, MulterFile } from '../server'
 import { Post, FixedMethodProps } from './Method'
 import { MockType, isMock } from '../mock'
@@ -21,7 +21,7 @@ export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
 /**
  * 文件上传
  */
-export const Upload: Comp<UploadProps> = props => {
+export const Upload: Component<UploadProps> = props => {
   const { children, ...other } = props
   const response =
     typeof children === 'function' && !isMock(children)

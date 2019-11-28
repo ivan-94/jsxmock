@@ -1,5 +1,5 @@
 import omit from 'lodash/omit'
-import { VNode, isVNode, PrimitiveElement, Children, Element } from './h'
+import { VNode, isVNode, Primitive, Children, Element } from './h'
 import { Request, Response, Connection } from './server'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
 
@@ -63,7 +63,7 @@ export function renderChilren(children?: any) {
   })
 }
 
-export function render(vnode: VNode): Instance | PrimitiveElement {
+export function render(vnode: VNode): Instance | Primitive {
   if (typeof vnode.type !== 'string') {
     // custom component
     const rtn = vnode.type(vnode.props)
@@ -71,7 +71,7 @@ export function render(vnode: VNode): Instance | PrimitiveElement {
       return render(rtn)
     }
 
-    return rtn as PrimitiveElement
+    return rtn as Primitive
   }
 
   // host component

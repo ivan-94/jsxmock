@@ -13,7 +13,7 @@ import {
 
 export const test = () => {
   return (
-    <mocker>
+    <server>
       <Get code="400" path="/shit">
         shit
       </Get>
@@ -54,7 +54,7 @@ export const test = () => {
           return true
         }}
       </match>
-    </mocker>
+    </server>
   )
 }
 

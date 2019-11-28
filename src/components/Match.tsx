@@ -1,6 +1,6 @@
 /* @jsx h */
 import get from 'lodash/get'
-import { h, Comp } from '../h'
+import { h, Component } from '../h'
 import { Request, Response } from '../server'
 import { MethodProps } from './Method'
 import {
@@ -67,7 +67,7 @@ function isMatch(src: any, value: any | ((value: any) => boolean)) {
   return src === value
 }
 
-export const MatchBy: Comp<MatchByProps> = props => {
+export const MatchBy: Component<MatchByProps> = props => {
   const { match, skip } = props
   return (
     <match skip={skip}>
@@ -82,7 +82,7 @@ export const MatchBy: Comp<MatchByProps> = props => {
   )
 }
 
-export const MatchByHeader: Comp<MatchByTypeProps> = props => {
+export const MatchByHeader: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
@@ -98,7 +98,7 @@ export const MatchByHeader: Comp<MatchByTypeProps> = props => {
   )
 }
 
-export const MatchBySearch: Comp<MatchByTypeProps> = props => {
+export const MatchBySearch: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
@@ -114,7 +114,7 @@ export const MatchBySearch: Comp<MatchByTypeProps> = props => {
   )
 }
 
-export const MatchByBody: Comp<MatchByTypeProps> = props => {
+export const MatchByBody: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
@@ -130,7 +130,7 @@ export const MatchByBody: Comp<MatchByTypeProps> = props => {
   )
 }
 
-export const MatchByJSON: Comp<MatchByTypeProps> = props => {
+export const MatchByJSON: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
@@ -146,7 +146,7 @@ export const MatchByJSON: Comp<MatchByTypeProps> = props => {
   )
 }
 
-export const MatchByParams: Comp<MatchByTypeProps> = props => {
+export const MatchByParams: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
@@ -162,7 +162,7 @@ export const MatchByParams: Comp<MatchByTypeProps> = props => {
   )
 }
 
-export const MatchByForm: Comp<MatchByTypeProps> = props => {
+export const MatchByForm: Component<MatchByTypeProps> = props => {
   const { key, value, skip } = props
   return (
     <match skip={skip}>
