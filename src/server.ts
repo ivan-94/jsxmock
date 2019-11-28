@@ -7,7 +7,7 @@ import multer from 'multer'
 import express, { Request, Response } from 'express'
 import isEqual from 'lodash/isEqual'
 import sockjs, { Connection } from 'sockjs'
-import { ServiceConfig, WebSocketConfig } from './render'
+import { ServiceConfig, WebSocketConfig, runMiddlewares } from './runner'
 
 export { Request, Response, Connection }
 
@@ -60,19 +60,19 @@ function handleSockConnect(path: string, conn: Connection) {
   })
 }
 
-function attachSockjs(ws: WebSocketConfig[]) {
-  for (const cf of ws) {
-    if (cf.path in registerSockHandlers) {
-      registerSockHandlers[cf.path] = cf
-      continue
+function attachSockjs(ws: ServiceConfig['ws']) {
+  ws.forEach((cf, path) => {
+    if (path in registerSockHandlers) {
+      registerSockHandlers[path] = cf
+      return
     }
 
     // attach
-    registerSockHandlers[cf.path] = cf
+    registerSockHandlers[path] = cf
     const sockSrv = sockjs.createServer({})
-    sockSrv.installHandlers(server, { prefix: cf.path })
-    sockSrv.on('connection', handleSockConnect.bind(null, cf.path))
-  }
+    sockSrv.installHandlers(server, { prefix: path })
+    sockSrv.on('connection', handleSockConnect.bind(null, path))
+  })
 }
 
 export function runServer(config: ServiceConfig) {
@@ -93,29 +93,21 @@ export function runServer(config: ServiceConfig) {
     dest: path.join(os.tmpdir(), 'mocker'),
   })
 
-  // json 解析
   app.use(cors())
   app.use(express.json())
   app.use(express.urlencoded({ extended: true }))
   app.use(mul.any())
 
+  // TODO: 日志
+  app.use((req, res, next) => {
+    console.info(`${req.method} ${req.path}`)
+    next()
+  })
+
   const router = express.Router()
 
-  // TODO: 日志
-  // TODO: file watch
-  router.use((req, res, next) => {
-    console.info(`${req.method} ${req.path}`)
-
-    let hit = false
-    for (const m of currentConfig.matches) {
-      if ((hit = m(req, res))) {
-        break
-      }
-    }
-
-    if (!hit) {
-      // TODO: proxy
-    }
+  router.use(async (req, res, next) => {
+    const hit = await runMiddlewares(req, res, currentConfig.middlewares)
 
     if (!hit) {
       console.warn(`${req.method} ${req.path} 请求未命中任何模拟器`)

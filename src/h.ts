@@ -1,20 +1,11 @@
-import { Request, Response, Connection } from './server'
+import { Connection } from './server'
 import { EMPTY_OBJECT } from './utils'
+import { Middleware } from './runner'
 
 export type Primitive = null | undefined | string | boolean | number
-export type Element<T> = VNode<T> | Primitive
+export type Element<T = {}> = VNode<T> | Primitive
 export type Children = Element<any>[]
-export type Component<T> = (props: T) => Element<T>
-
-/**
- * 节点类型
- */
-export enum NodeType {
-  Server,
-  Use,
-  WebSocket,
-  Custom,
-}
+export type Component<T = {}> = (props: T) => Element<T>
 
 export interface VNode<P = {}> {
   _vnode: true
@@ -67,18 +58,12 @@ export declare namespace h {
         children: any
       }
       // 类似于koa 的中间件
-      // use: {
-      //   m: (
-      //     req: Request,
-      //     res: Response,
-      //     next: (matched: boolean) => Promise<any>,
-      //   ) => Promise<any>
-      //   skip?: boolean
-      // }
-      match: {
-        children: (req: Request, res: Response) => boolean
+      use: {
+        m: Middleware
         skip?: boolean
+        children?: any
       }
+      fragment: {}
       websocket: {
         path: string
         onMessage?: (data: any, conn: Connection) => void

@@ -1,48 +1,85 @@
-import omit from 'lodash/omit'
-import { VNode, isVNode, Primitive, Children, Element } from './h'
-import { Request, Response, Connection } from './server'
+import { VNode, isVNode, Primitive, Element, Component } from './h'
 import { EMPTY_ARRAY, EMPTY_OBJECT } from './utils'
 
+/**
+ * 节点类型
+ */
+export enum NodeType {
+  Server,
+  Use,
+  WebSocket,
+  Fragment,
+  Primitive, // 类似于DOM 的 TextNode、这些节点会被忽略
+  Custom,
+}
+
+/**
+ * 节点实例
+ */
 export interface Instance {
   _inst: true
-  type: string
+  // 节点分类
+  tag: NodeType
+  // 节点类型
+  type: string | Component<any> | unknown
   props: any
-  children?: any[]
+  // 父节点
+  return: Instance | null
+  // 第一个子节点
+  child: Instance | null
+  // 兄弟节点
+  sibling: Instance | null
 }
 
-export interface MatchConfig {
-  // 表示是否匹配
-  (req: Request, res: Response): boolean
-}
-
-export interface HostConfig {
-  prefix?: string
-  port?: number
-  https?: boolean
-  host?: string
-}
-
-export interface WebSocketConfig {
-  path: string
-  onMessage?: (data: any, conn: Connection) => void
-  onConnect?: (conn: Connection) => void
-  onClose?: () => void
-}
-
-export interface ProxyConfig {}
-
-export interface ServiceConfig {
-  server: HostConfig
-  matches: MatchConfig[]
-  ws: WebSocketConfig[]
-  proxies: ProxyConfig[]
+const BuildinElements: { [type: string]: NodeType } = {
+  server: NodeType.Server,
+  use: NodeType.Use,
+  websocket: NodeType.WebSocket,
+  fragment: NodeType.Fragment,
 }
 
 export function isInstance(t: any): t is Instance {
   return t && t._inst
 }
 
-export function childrenToArray(children?: Element<any> | Element<any>[]) {
+function createInstance<T = {}>(vnode: VNode<T> | unknown): Instance {
+  if (!isVNode(vnode)) {
+    return {
+      _inst: true,
+      tag: NodeType.Primitive,
+      type: vnode,
+      props: EMPTY_OBJECT,
+      return: null,
+      child: null,
+      sibling: null,
+    }
+  }
+
+  let tag: NodeType
+  if (typeof vnode.type === 'string') {
+    if (vnode.type in BuildinElements) {
+      tag = BuildinElements[vnode.type]
+    } else {
+      throw new Error(`Unknown element type: ${vnode.type}`)
+    }
+  } else if (typeof vnode.type === 'function') {
+    tag = NodeType.Custom
+  } else {
+    throw new Error(`Unknown element type: ${vnode.type}`)
+  }
+
+  return {
+    _inst: true,
+    tag,
+    type: vnode.type,
+    props: vnode.props || EMPTY_OBJECT,
+    return: null,
+    child: null,
+    sibling: null,
+  }
+}
+
+function childrenToArray(children?: Element<any> | Element<any>[]) {
   return children
     ? Array.isArray(children)
       ? children
@@ -50,90 +87,38 @@ export function childrenToArray(children?: Element<any> | Element<any>[]) {
     : EMPTY_ARRAY
 }
 
-export function hasElementChildren(children: any): children is Children {
-  return childrenToArray(children).some(i => isVNode(i))
-}
-
-export function renderChilren(children?: any) {
-  return childrenToArray(children).map(node => {
-    if (isVNode(node)) {
-      return render(node)
+function renderChilren(children: any, inst: Instance) {
+  const ls = childrenToArray(children)
+  let prev: Instance | undefined
+  for (const item of ls) {
+    const rtn = render(item, inst)
+    if (prev != null) {
+      prev.sibling = rtn
     }
-    return node
-  })
+    prev = rtn
+  }
 }
 
-export function render(vnode: VNode): Instance | Primitive {
-  if (typeof vnode.type !== 'string') {
+export function render(vnode: VNode | Primitive, parent?: Instance): Instance {
+  const inst = createInstance(vnode)
+
+  if (parent) {
+    inst.return = parent
+    if (parent.child === null) {
+      parent.child = inst
+    }
+  }
+
+  if (inst.tag === NodeType.Primitive) {
+    return inst
+  } else if (inst.tag === NodeType.Custom) {
     // custom component
-    const rtn = vnode.type(vnode.props)
-    if (isVNode(rtn)) {
-      return render(rtn)
-    }
-
-    return rtn as Primitive
+    const rtn = (inst.type as Component)(inst.props)
+    return render(rtn, inst)
   }
 
   // host component
-  return {
-    _inst: true,
-    type: vnode.type,
-    props: vnode.props,
-    children: renderChilren(vnode.props.children),
-  }
-}
+  renderChilren(inst.props.children, inst)
 
-export function validate(tree?: Instance | unknown): ServiceConfig {
-  let server: HostConfig
-  let matches: MatchConfig[] = []
-  let ws: WebSocketConfig[] = []
-  let proxies: ProxyConfig[] = []
-
-  if (!isInstance(tree) || tree.type !== 'mocker') {
-    throw new Error('mocker 必须为根组件')
-  }
-
-  server = omit(tree.props || EMPTY_OBJECT, 'children')
-
-  if (tree.children) {
-    for (const node of tree.children) {
-      if (!isInstance(node)) {
-        continue
-      }
-
-      switch (node.type) {
-        case 'match':
-          if (node.children == null || typeof node.children[0] !== 'function') {
-            throw new Error('match children 不能为空, 且必须为函数')
-          }
-          if (!node.props.skip) {
-            matches.push(node.children[0])
-          }
-          break
-        case 'websocket':
-          node.props.path = node.props.path || '/'
-          ws.push(node.props)
-          break
-        case 'proxy':
-          proxies.push(node.props)
-          break
-        default:
-          throw new Error(`未知组件类型: ${node.type}`)
-      }
-    }
-  }
-
-  // 验证 websocket 前缀
-  const set = new Set()
-  ws.forEach(i => set.add(i.path || '/'))
-  if (ws.length !== set.size) {
-    throw new Error('websocket 路径不能重复')
-  }
-
-  return {
-    server,
-    matches,
-    ws,
-    proxies,
-  }
+  return inst
 }
