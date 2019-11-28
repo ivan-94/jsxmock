@@ -123,7 +123,7 @@ function mountChilren(children: any, parent: Instance) {
 let currentMiddlewares: Middlewares
 let currentWs: Map<string, WebSocketConfig>
 let md: Middlewares
-function mount(vnode: VNode | unknown, parent?: Instance): Instance {
+function mount(vnode: VNode | unknown, parent: Instance | null): Instance {
   const inst = createInstance(vnode)
   let prevMiddlewares: Middlewares
 
@@ -177,7 +177,7 @@ export function render(vnode: VNode | unknown) {
   ))
   const ws: Map<string, WebSocketConfig> = (currentWs = new Map())
 
-  const tree = render(vnode)
+  const tree = mount(vnode, null)
 
   // validate
   if (!isInstance(tree) || tree.tag !== NodeType.Server) {
