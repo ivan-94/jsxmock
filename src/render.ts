@@ -87,11 +87,11 @@ function childrenToArray(children?: Element<any> | Element<any>[]) {
     : EMPTY_ARRAY
 }
 
-function renderChilren(children: any, inst: Instance) {
+function renderChilren(children: any, parent: Instance) {
   const ls = childrenToArray(children)
   let prev: Instance | undefined
   for (const item of ls) {
-    const rtn = render(item, inst)
+    const rtn = render(item, parent)
     if (prev != null) {
       prev.sibling = rtn
     }
@@ -114,7 +114,8 @@ export function render(vnode: VNode | unknown, parent?: Instance): Instance {
   } else if (inst.tag === NodeType.Custom) {
     // custom component
     const rtn = (inst.type as Component)(inst.props)
-    return render(rtn, inst)
+    render(rtn, inst)
+    return inst
   }
 
   // host component
