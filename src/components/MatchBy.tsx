@@ -1,7 +1,7 @@
 /* @jsx h */
 import get from 'lodash/get'
 import { h } from '../h'
-import { Request, Component } from '../type'
+import { Request } from '../type'
 import { MatchProps, Match } from './Match'
 
 function isMatch(src: any, value: any | ((value: any) => boolean)) {
@@ -19,14 +19,12 @@ export interface MatchByTypeProps extends Omit<MatchProps, 'match'> {
 const createMatcher = (
   match: (req: Request, key: string, value: any) => boolean,
 ) => {
-  const Matcher: Component<MatchByTypeProps> = props => {
+  return (props: MatchByTypeProps) => {
     const { key, value, ...other } = props
     return (
       <Match match={(req, res) => match(req, key, value)} {...other}></Match>
     )
   }
-
-  return Matcher
 }
 
 export const MatchByHeader = createMatcher((req, key, value) => {

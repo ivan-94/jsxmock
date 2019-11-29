@@ -53,12 +53,56 @@ export interface ServiceConfig {
   ws: Map<string, WebSocketConfig>
 }
 
-export type Element<T = {}> = VNode<T> | unknown
-export type PropsWithChildren<P> = P & { children: Element }
-export type Component<T = {}> = (props: PropsWithChildren<T>) => Element<T>
-
 export interface VNode<P = {}> {
   _vnode: true
   type: Component<P> | string
-  props: P & { children: Element<any>[] | Element<any> }
+  props: P & { children: ComponentChildren }
+}
+
+export type ComponentChild =
+  | VNode<any>
+  | object
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+export type ComponentChildren = ComponentChild[] | ComponentChild
+export type RenderableProps<P> = Readonly<P & { children?: ComponentChildren }>
+export type Component<P = any> = (props: RenderableProps<P>) => VNode<P> | null
+
+export declare namespace JSXInternal {
+  interface Element extends VNode<any> {}
+
+  interface ElementAttributesProperty {
+    props: any
+  }
+
+  interface ElementChildrenAttribute {
+    children: any
+  }
+
+  interface IntrinsicElements {
+    // 核心元素
+    server: {
+      prefix?: string
+      port?: string | number
+      host?: string
+      https?: boolean
+      children: any
+    }
+    // 类似于koa 的中间件
+    use: {
+      m: Middleware
+      skip?: boolean
+      children?: any
+    }
+    fragment: {}
+    websocket: {
+      path: string
+      onMessage?: (data: any, conn: Connection) => void
+      onConnect?: (conn: Connection) => void
+      onClose?: () => void
+    }
+  }
 }

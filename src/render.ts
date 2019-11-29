@@ -7,8 +7,10 @@ import {
   WebSocketConfig,
   HostConfig,
   VNode,
-  Element,
+  ComponentChildren,
   Component,
+  ComponentChild,
+  ServiceConfig,
 } from './type'
 
 /**
@@ -100,7 +102,7 @@ function createMiddlewares(cb: Middleware, parent?: Middlewares) {
   }
 }
 
-function childrenToArray(children?: Element<any> | Element<any>[]) {
+function childrenToArray(children?: ComponentChildren) {
   return children
     ? Array.isArray(children)
       ? children
@@ -139,7 +141,9 @@ function mount(vnode: VNode | unknown, parent: Instance | null): Instance {
   } else if (inst.tag === NodeType.Custom) {
     // custom component
     const rtn = (inst.type as Component)(inst.props)
-    mount(rtn, inst)
+    if (rtn != null) {
+      mount(rtn, inst)
+    }
     return inst
   }
 
@@ -170,7 +174,7 @@ function mount(vnode: VNode | unknown, parent: Instance | null): Instance {
   return inst
 }
 
-export function render(vnode: VNode | unknown) {
+export function render(vnode: ComponentChild): ServiceConfig {
   const server: HostConfig = {}
   const middlewares: Middlewares = (currentMiddlewares = createMiddlewares(
     NoopMiddleware,

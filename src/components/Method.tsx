@@ -1,7 +1,6 @@
 /* @jsx h */
 import { match } from 'path-to-regexp'
 import { h } from '../h'
-import { Component, PropsWithChildren } from '../type'
 import { Match, MatchProps } from './Match'
 
 export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
@@ -13,7 +12,7 @@ export interface MethodProps extends Omit<MatchProps, 'match'> {
 
 export type FixedMethodProps = Omit<MethodProps, 'method'>
 
-export const Method: Component<MethodProps> = props => {
+export const Method = (props: MethodProps) => {
   const { method = 'GET', path = '/', ...other } = props
   let pathMatcher = match(path, { decode: decodeURIComponent })
 
@@ -42,7 +41,7 @@ export const Method: Component<MethodProps> = props => {
 }
 
 function fixedMethod(method: METHODS) {
-  return (props: PropsWithChildren<FixedMethodProps>) => {
+  return (props: FixedMethodProps) => {
     return <Method method={method} {...props} />
   }
 }

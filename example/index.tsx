@@ -9,6 +9,7 @@ import {
   MatchByForm,
   JSONRPC,
   mock,
+  Delete,
 } from '../src/index'
 
 export const test = () => {
@@ -18,6 +19,11 @@ export const test = () => {
         shit
       </Get>
       <Post headers={{ Test: 'CustomHeader' }}>POST success</Post>
+      <Delete path="/delete">
+        {(req, res) => {
+          res.send('deleted')
+        }}
+      </Delete>
       <Method method="GET" code="200">
         hello world
       </Method>

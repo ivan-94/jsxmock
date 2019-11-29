@@ -3,9 +3,9 @@ import { h, hasVNode } from '../h'
 import {
   Request,
   Response,
-  Component,
   Middleware,
   MiddlewareMatcher,
+  ComponentChildren,
 } from '../type'
 import { statusCode, transformData } from '../utils'
 import { MockType, isMock } from '../mock'
@@ -17,20 +17,13 @@ export interface MatchProps {
   headers?: { [key: string]: string }
   code?: number | string
   desc?: string
-  children?:
-    | string
-    | number
-    | object
-    | boolean
-    | MiddlewareMatcher
-    | MockType
-    | unknown
+  children?: ComponentChildren | MiddlewareMatcher | MockType
 }
 
 /**
  * 底层 Match 组件
  */
-export const Match: Component<MatchProps> = props => {
+export const Match = (props: MatchProps) => {
   const { match, skip, children, code = 200, headers } = props
   let response: Middleware | null = null
 
