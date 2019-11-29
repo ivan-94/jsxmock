@@ -6,41 +6,50 @@ import {
   Middleware,
   MiddlewareMatcher,
   ComponentChildren,
+  StringRecord,
 } from '../type'
 import { statusCode, transformData } from '../utils'
 import { MockType, isMock } from '../mock'
 import { normalizedMatcherReturn } from '../runner'
 
+export type CustomResponder =
+  | MiddlewareMatcher
+  | MockType
+  | boolean
+  | string
+  | number
+  | object
+  | null
+  | undefined
+
 export interface MatchProps {
   match?: (req: Request, res: Response) => boolean
   skip?: boolean
-  headers?: { [key: string]: string }
+  headers?: StringRecord
   code?: number | string
   desc?: string
-  children?: ComponentChildren | MiddlewareMatcher | MockType
+  children?: ComponentChildren | CustomResponder
 }
 
-/**
- * 底层 Match 组件
- */
-export const Match = (props: MatchProps) => {
-  const { match, skip, children, code = 200, headers } = props
-  let response: Middleware | null = null
-
-  if (children && typeof children === 'function' && !isMock(children)) {
+export function generateCustomResponder(
+  responder: CustomResponder,
+  options: { code?: string | number; headers?: StringRecord },
+): Middleware | null {
+  const { code = 200, headers } = options
+  if (responder && typeof responder === 'function' && !isMock(responder)) {
     // 自定义响应
-    response = (req, res) => normalizedMatcherReturn(children(req, res))
-  } else if (!hasVNode(children)) {
+    return (req, res) => normalizedMatcherReturn(responder(req, res))
+  } else if (!hasVNode(responder)) {
     // 固定响应
-    response = async (req, res) => {
+    return async (req, res) => {
       res.status(statusCode(code))
 
       if (headers) {
         res.set(headers)
       }
 
-      if (children) {
-        const data = await transformData(children)
+      if (responder) {
+        const data = await transformData(responder)
         res.send(data)
       } else {
         res.end()
@@ -48,6 +57,15 @@ export const Match = (props: MatchProps) => {
       return true
     }
   }
+  return null
+}
+
+/**
+ * 底层 Match 组件
+ */
+export const Match = (props: MatchProps) => {
+  const { match, skip, children } = props
+  let response = generateCustomResponder(children, props)
 
   return (
     <use

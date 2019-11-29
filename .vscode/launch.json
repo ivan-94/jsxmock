@@ -21,20 +21,6 @@
       "name": "Run Example",
       "runtimeArgs": ["-r", "ts-node/register"],
       "args": ["${workspaceFolder}/example/index.tsx"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Run UI Example",
-      "runtimeArgs": ["-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/example/ui.tsx"]
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Run Cmd",
-      "runtimeArgs": ["-r", "ts-node/register"],
-      "args": ["${workspaceFolder}/src/cli.ts", "--init"]
     }
   ]
 }

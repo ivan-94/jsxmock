@@ -1,12 +1,19 @@
 /* @jsx h */
-import { match } from 'path-to-regexp'
+import { match, Path } from 'path-to-regexp'
 import { h } from '../h'
 import { Match, MatchProps } from './Match'
 
-export type METHODS = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'OPTION' | 'HEAD'
+export type METHODS =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'OPTION'
+  | 'HEAD'
+  | '*'
 
 export interface MethodProps extends Omit<MatchProps, 'match'> {
-  path?: string
+  path?: Path
   method?: METHODS
 }
 
@@ -20,7 +27,7 @@ export const Method = (props: MethodProps) => {
     <Match
       match={req => {
         // 判断方法和路径是否匹配
-        if (req.method !== method) {
+        if (method !== '*' && req.method !== method) {
           return false
         }
 
@@ -52,5 +59,6 @@ export const Put = fixedMethod('PUT')
 export const Delete = fixedMethod('DELETE')
 export const Option = fixedMethod('OPTION')
 export const Head = fixedMethod('HEAD')
+export const All = fixedMethod('*')
 
 export default Method

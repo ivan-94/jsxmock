@@ -1,44 +1,83 @@
 /* @jsx h */
 import {
-  start,
   h,
-  Method,
+  start,
   Get,
   Post,
+  All,
   MatchByJSON,
-  MatchByForm,
   JSONRPC,
   mock,
   Delete,
+  MatchBySearch,
+  NotFound,
+  Delay,
+  Redirect,
 } from '../src/index'
+import { BlackHole } from '../src/components/BlackHole'
 
 export const test = () => {
   return (
     <server>
-      <Get code="400" path="/shit">
-        shit
+      {/* default path / */}
+      <Get>hello world</Get>
+
+      {/* add custom path, code and headers */}
+      <Get path="/custom-path" code="400" headers={{ 'X-Power-By': 'JSXMOCK' }}>
+        {{ custom: 'return json' }}
       </Get>
-      <Post headers={{ Test: 'CustomHeader' }}>POST success</Post>
-      <Delete path="/delete">
+
+      <Post path="/post">POST success</Post>
+      <All path="/all-method">ALL Method</All>
+      <Get path="/skip" skip>
+        skiped
+      </Get>
+
+      {/* path match: power by path-to-regexp */}
+      <Get path="/user/:id">
+        {(req, res) => {
+          res.send(`GET USER ${req.params.id}`)
+        }}
+      </Get>
+
+      {/* custom return */}
+      <Delete path="/custom-return">
         {(req, res) => {
           res.send('deleted')
         }}
       </Delete>
-      <Method method="GET" code="200">
-        hello world
-      </Method>
-      <Post path="/jsonrpc-test">
-        <MatchByJSON key="method" value="hello">
-          {{
-            result: 'hello',
-          }}
+
+      {/* mockjs: power by nuysoft/mock */}
+      <Get path="/mockjs">
+        {mock({
+          'id|+1': 1,
+          email: '@email',
+          name: '@clast',
+        })}
+      </Get>
+
+      {/* delay response */}
+      <Get path="/delay">
+        <Delay timeout={5000}>Delay Delay...</Delay>
+      </Get>
+
+      {/* redirect */}
+      <Get path="/redirect">
+        <Redirect to="https://baidu.com" />
+      </Get>
+
+      {/* nested match */}
+      <Post path="/nested">
+        <MatchBySearch key="method" value="hello">
+          Match By Search: /nest?method=hello
+        </MatchBySearch>
+        <MatchByJSON key="method" value="world">
+          {`Match By JSON: {method: 'world'}`}
         </MatchByJSON>
-        <MatchByForm key="method" value="world">
-          {{
-            result: 'hello world',
-          }}
-        </MatchByForm>
+        <BlackHole>eat everything</BlackHole>
       </Post>
+
+      {/* jsonrpc 2.0 */}
       <JSONRPC path="/jsonrpc">
         <JSONRPC.Method name="hello">hello</JSONRPC.Method>
         <JSONRPC.Method name="world">world</JSONRPC.Method>
@@ -54,6 +93,19 @@ export const test = () => {
           }}
         </JSONRPC.Method>
       </JSONRPC>
+
+      <Get path="/test-not-found">
+        <NotFound onNotFound="未找到任何东西">
+          <Get path="/404">Not Found</Get>
+        </NotFound>
+      </Get>
+
+      <Get path="/test-not-found-2">
+        <Get path="/404">Not Found</Get>
+        <NotFound onNotFound="未找到任何东西" />
+      </Get>
+
+      {/* low level middleware */}
       <use
         m={async (req, res) => {
           res.status(500).send('Mock Server Error')

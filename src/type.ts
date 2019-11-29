@@ -3,6 +3,7 @@ import { Connection } from 'sockjs'
 
 export { Request, Response, Connection }
 export type MulterFile = Express.Multer.File
+export type StringRecord = { [key: string]: string }
 
 /**
  * @param req express 请求对象
