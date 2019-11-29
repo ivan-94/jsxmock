@@ -85,7 +85,7 @@ export function runServer(config: ServiceConfig) {
   const app = express()
   server = enableHTTPS ? https.createServer(app) : http.createServer(app)
   const mul = multer({
-    dest: path.join(os.tmpdir(), 'mocker'),
+    dest: path.join(os.tmpdir(), 'jsxmock'),
   })
 
   app.use(cors())

@@ -3,7 +3,7 @@ import path from 'path'
 import { transformFileAsync } from '@babel/core'
 import { start, restart } from './index'
 
-const NAME = '.mocker'
+const NAME = '.jsxmock'
 const EXTS = ['.jsx', '.js', '.tsx']
 const cwd = process.cwd()
 const pkg = require('../package.json')
@@ -79,11 +79,11 @@ function getInitial(code: string, filename: string) {
 
   const res = module.exports?.default || module.exports
   if (res == null) {
-    throw new Error(`${filename} not default export mocker configuration`)
+    throw new Error(`${filename} not default export jsxmock configuration`)
   }
 
   if (typeof res !== 'function') {
-    throw new Error(`mocker configuration must be a function`)
+    throw new Error(`jsxmock configuration must export a function`)
   }
 
   return res

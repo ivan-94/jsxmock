@@ -1,6 +1,7 @@
 {
-  "name": "@gdjiami/mocker",
+  "name": "jsxmock",
   "version": "0.1.0",
+  "private": false,
   "description": "Simple mock server, declare API by JSX",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",
@@ -19,27 +20,20 @@
     "access": "public"
   },
   "bin": {
-    "mocker": "./bin/mocker.js"
+    "jsxmock": "./bin/jsxmock.js"
   },
   "husky": {
     "hooks": {
       "pre-commit": "pretty-quick --staged"
     }
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/GDJiaMi/mocker.git"
-  },
-  "author": {
-    "name": "ivan lee",
-    "email": "carney520@hotmail.com",
-    "url": "https://github.com/carney520"
-  },
+  "repository": "git+https://github.com/ivan-94/jsxmock.git",
+  "author": "ivan lee <carney520@hotmail.com> (https://github.com/ivan-94)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/GDJiaMi/mocker/issues"
+    "url": "https://github.com/ivan-94/jsxmock/issues"
   },
-  "homepage": "https://github.com/GDJiaMi/mocker#readme",
+  "homepage": "https://github.com/ivan-94/jsxmock#readme",
   "engines": {
     "node": ">=10.0"
   },

@@ -4,7 +4,7 @@ import { findConfig, getDefaultConfigurationPath, tranformAndRun } from './ui'
 
 const temp = `
 /* @jsx h */
-import { h, Get, Post } from '@gdjiami/mocker'
+import { h, Get, Post } from 'jsxmock'
 
 export default () => (
   <server port="4321">
@@ -17,9 +17,9 @@ export default () => (
 )
 `
 
-cmd.name('mocker').description('Simple mock server, declare API by JSX')
+cmd.name('jsxmock').description('Simple mock server, declare API by JSX')
 
-cmd.option('--init', 'create mocker configuration')
+cmd.option('--init', 'create jsxmock configuration')
 
 const init = async () => {
   const filename = await findConfig()
