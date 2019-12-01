@@ -102,11 +102,20 @@ export function runServer(config: ServiceConfig) {
   const router = express.Router()
 
   router.use(async (req, res, next) => {
-    const hit = await runMiddlewares(req, res, currentConfig.middlewares)
+    try {
+      const hit = await runMiddlewares(req, res, currentConfig.middlewares)
 
-    if (!hit) {
-      console.warn(`${req.method} ${req.path} 请求未命中任何模拟器`)
-      next()
+      if (!hit) {
+        console.warn(`${req.method} ${req.path} 请求未命中任何模拟器`)
+        next()
+      }
+    } catch (err) {
+      console.error('failed to runMiddlewares:')
+      console.error(err)
+      if (!res.headersSent) {
+        res.status(500)
+        res.send(err.message)
+      }
     }
   })
 

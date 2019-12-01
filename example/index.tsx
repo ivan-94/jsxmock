@@ -14,6 +14,7 @@ import {
   NotFound,
   Delay,
   Redirect,
+  Catch,
 } from '../src/index'
 import { BlackHole } from '../src/components/BlackHole'
 
@@ -27,6 +28,13 @@ export const test = () => {
       <Get path="/custom-path" code="400" headers={{ 'X-Power-By': 'JSXMOCK' }}>
         {{ custom: 'return json' }}
       </Get>
+
+      <Get path="/custom-type" type="text">
+        text/plain
+      </Get>
+      <Get path="/buffer">{Buffer.from('buffer')}</Get>
+      <Get path="/boolean">{true}</Get>
+      <Get path="/number">{1}</Get>
 
       <Post path="/post">POST success</Post>
       <All path="/all-method">ALL Method</All>
@@ -119,6 +127,19 @@ export const test = () => {
           res.send(`Proxy Matched: ${req.path}`)
         }}
       </All>
+
+      <Catch
+        onError={(err, req, res) => {
+          res.status(500)
+          res.send(`Sorry, We got some problems: ${err.message}`)
+        }}
+      >
+        <Get path="/error">
+          {() => {
+            throw Error('CODE-01')
+          }}
+        </Get>
+      </Catch>
 
       {/* low level middleware */}
       <use

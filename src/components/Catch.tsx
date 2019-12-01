@@ -15,7 +15,7 @@ export const Catch: Component<CatchProps> = props => {
     <use
       m={async (req, res, rec) => {
         try {
-          return rec()
+          return await rec()
         } catch (err) {
           onError(err, req, res)
           return true
