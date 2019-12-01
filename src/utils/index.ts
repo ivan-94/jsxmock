@@ -1,4 +1,4 @@
-import { isMock } from './mock'
+import { isMock } from '../mock'
 
 export const EMPTY_OBJECT = {}
 export const EMPTY_ARRAY = []

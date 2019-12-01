@@ -9,6 +9,7 @@ import isEqual from 'lodash/isEqual'
 import sockjs, { Connection } from 'sockjs'
 import { runMiddlewares } from './runner'
 import { ServiceConfig, WebSocketConfig } from './type'
+import genCert from './utils/cert'
 
 const DEFAULT_PORT = 4321
 const DEFAULT_HOST = '0.0.0.0'
@@ -83,7 +84,6 @@ export function runServer(config: ServiceConfig) {
 
   // TODO: 端口查找
   const app = express()
-  server = enableHTTPS ? https.createServer(app) : http.createServer(app)
   const mul = multer({
     dest: path.join(os.tmpdir(), 'jsxmock'),
   })
@@ -112,9 +112,26 @@ export function runServer(config: ServiceConfig) {
 
   app.use(prefix, router)
 
+  if (enableHTTPS) {
+    const cert = genCert()
+    server = https.createServer(
+      {
+        key: cert,
+        cert: cert,
+      },
+      app,
+    )
+  } else {
+    server = http.createServer(app)
+  }
+
   attachSockjs(currentConfig.ws)
 
   server.listen(port, host, () => {
-    console.log(`Mock 服务器已启动: ${host}:${port}`)
+    console.log(
+      `JSXMock 服务器已启动: ${
+        enableHTTPS ? 'https' : 'http'
+      }://${host}:${port}`,
+    )
   })
 }

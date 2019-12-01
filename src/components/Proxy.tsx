@@ -11,6 +11,7 @@ export interface ProxyProps extends proxy.Config {
 
 export const Proxy = (props: ProxyProps) => {
   const { path, ...config } = props
+  config.logLevel = config.logLevel || 'warn'
   const md = proxy(config)
   const children = (
     <use

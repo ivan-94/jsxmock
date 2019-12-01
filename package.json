@@ -39,7 +39,8 @@
   },
   "files": [
     "bin",
-    "dist"
+    "dist",
+    "ssl"
   ],
   "devDependencies": {
     "@types/cors": "^2.8.6",
@@ -76,6 +77,7 @@
     "mockjs": "^1.1.0",
     "multer": "^1.4.2",
     "path-to-regexp": "^6.1.0",
+    "selfsigned": "^1.10.7",
     "sockjs": "^0.3.19",
     "tslib": "^1.10.0"
   }
