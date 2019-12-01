@@ -2,7 +2,7 @@
 import { h } from '../h'
 import { Component, StringRecord } from '../type'
 
-import { generateCustomResponder, CustomResponder } from './Match'
+import { generateResponder, CustomResponder } from './Match'
 
 export interface NotFoundProps {
   onNotFound?: CustomResponder
@@ -17,7 +17,7 @@ export interface NotFoundProps {
 export const NotFound: Component<NotFoundProps> = props => {
   const { children, skip, onNotFound, code = 404, headers } = props
   const standalone = children == null
-  const responder = generateCustomResponder(onNotFound, { code, headers })
+  const responder = generateResponder(onNotFound, { code, headers })
 
   return (
     <use

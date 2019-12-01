@@ -21,6 +21,7 @@ export interface UploadProps extends Omit<FixedMethodProps, 'children'> {
 
 /**
  * 文件上传
+ * TODO: refactor
  */
 export const Upload = (props: UploadProps) => {
   const { children, ...other } = props

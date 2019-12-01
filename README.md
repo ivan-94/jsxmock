@@ -10,11 +10,13 @@
 
 jsxmock 是一个简单的 API Mock 服务器。它的特色就是使用 `JSX` 语法来声明 API，这个启发来源于 [Koa](https://github.com/koajs/koa) 和 [React](https://reactjs.org)。通过 jsxmock 你可以更简洁地定义你的 API，我们提供了一些基础组件，如果不能满足你的需求，你可以使用 React 组件开发的思维来封装和组合自己的组件。
 
-深入了解 jsxmock 可以了解这篇文章: [JSX AS DSL? 写个 Mock API 服务器看看](TODO:)
+<br>
+
+深入了解 jsxmock 可以了解这篇文章: [**JSX AS DSL? 写个 Mock API 服务器看看**](TODO:)
 
 <br>
 
-> **🚧 该项目还处于开发阶段，欢迎一起来搞!**
+> **🚧 该项目还处于原型阶段，所有 API 都可能变动，欢迎一起来搞!**
 
 <br>
 
@@ -109,6 +111,11 @@ export default () => (
     {/* 自定义路径、响应代码和报头 */}
     <Get path="/custom-path" code="400" headers={{ 'X-Power-By': 'JSXMOCK' }}>
       {{ custom: 'return json' }}
+    </Get>
+
+    {/* 基于 path-to-regexp 的路径匹配 */}
+    <Get path="/user/:id" code="202">
+      {req => `GET USER ${req.params.id}`}
     </Get>
 
     {/* 其他响应类型 */}

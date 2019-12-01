@@ -43,10 +43,8 @@ export const test = () => {
       </Get>
 
       {/* path match: power by path-to-regexp */}
-      <Get path="/user/:id">
-        {(req, res) => {
-          res.send(`GET USER ${req.params.id}`)
-        }}
+      <Get path="/user/:id" code="202">
+        {req => `GET USER ${req.params.id}`}
       </Get>
 
       {/* custom return */}

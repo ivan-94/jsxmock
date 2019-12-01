@@ -4,16 +4,13 @@ import {
   Request,
   Response,
   Middleware,
-  MiddlewareMatcher,
   ComponentChildren,
   StringRecord,
 } from '../type'
 import { statusCode, transformData } from '../utils'
 import { MockType, isMock } from '../mock'
-import { normalizedMatcherReturn } from '../runner'
 
-export type CustomResponder =
-  | MiddlewareMatcher
+export type SendableType =
   | MockType
   | boolean
   | string
@@ -21,6 +18,10 @@ export type CustomResponder =
   | object
   | null
   | undefined
+
+export type CustomResponder =
+  | ((req: Request, res: Response) => SendableType | Promise<SendableType>)
+  | SendableType
 
 export interface MatchProps {
   match?: (req: Request, res: Response) => boolean
@@ -32,43 +33,66 @@ export interface MatchProps {
   children?: ComponentChildren | CustomResponder
 }
 
-export function generateCustomResponder(
+async function staticDataResponse(
+  req: Request,
+  res: Response,
+  payload: SendableType,
+  options: {
+    code?: string | number
+    headers?: StringRecord
+    type?: string
+  },
+) {
+  const { code = 200, headers, type } = options
+  res.status(statusCode(code))
+
+  if (headers) {
+    res.set(headers)
+  }
+
+  if (type != null) {
+    res.type(type)
+  }
+
+  if (payload) {
+    let data = await transformData(payload)
+
+    if (typeof data === 'number' || typeof data === 'boolean') {
+      data = JSON.stringify(data)
+      if (type == null) {
+        res.type('json')
+      }
+    }
+
+    res.send(data)
+  } else {
+    res.end()
+  }
+}
+
+export function generateResponder(
   responder: CustomResponder,
   options: { code?: string | number; headers?: StringRecord; type?: string },
 ): Middleware | null {
-  const { code = 200, headers, type } = options
   if (responder && typeof responder === 'function' && !isMock(responder)) {
-    // 自定义响应
-    return async (req, res) => normalizedMatcherReturn(responder(req, res))
-  } else if (!hasVNode(responder)) {
-    // 固定响应
+    // custom response
     return async (req, res) => {
-      res.status(statusCode(code))
-
-      if (headers) {
-        res.set(headers)
+      const rtn = responder(req, res)
+      // take over response
+      if (!res.headersSent) {
+        await staticDataResponse(req, res, rtn, options)
       }
 
-      if (type != null) {
-        res.type(type)
-      }
-
-      if (responder) {
-        let data = await transformData(responder)
-        if (typeof data === 'number' || typeof data === 'boolean') {
-          data = JSON.stringify(data)
-          if (type == null) {
-            res.type('json')
-          }
-        }
-
-        res.send(data)
-      } else {
-        res.end()
-      }
+      return true
+    }
+  } else if (!hasVNode(responder)) {
+    // static data response
+    return async (req, res) => {
+      await staticDataResponse(req, res, responder, options)
       return true
     }
   }
+
   return null
 }
 
@@ -77,15 +101,15 @@ export function generateCustomResponder(
  */
 export const Match = (props: MatchProps) => {
   const { match, skip, children } = props
-  let response = generateCustomResponder(children, props)
+  let responder = generateResponder(children, props)
 
   return (
     <use
       skip={skip}
       m={async (req, res, rec) => {
         if (match ? match(req, res) : true) {
-          if (response) {
-            return response(req, res, rec)
+          if (responder) {
+            return responder(req, res, rec)
           }
           return rec()
         }

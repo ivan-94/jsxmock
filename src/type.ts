@@ -22,10 +22,6 @@ export type Middleware = (
  * 返回 false 表示跳过 不匹配
  */
 export type MiddlewareMatcherReturn = Promise<false | void> | false | void
-export type MiddlewareMatcher = (
-  req: Request,
-  res: Response,
-) => MiddlewareMatcherReturn
 
 export interface HostConfig {
   prefix?: string
