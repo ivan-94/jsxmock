@@ -29,6 +29,7 @@ const init = async () => {
   }
   const target = getDefaultConfigurationPath()
   fs.writeFileSync(target, temp)
+  console.log(`${filename} created!`)
 }
 
 const start = () => {
