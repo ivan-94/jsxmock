@@ -25,6 +25,7 @@ export type CustomResponder =
 export interface MatchProps {
   match?: (req: Request, res: Response) => boolean
   skip?: boolean
+  type?: string
   headers?: StringRecord
   code?: number | string
   desc?: string
@@ -33,12 +34,12 @@ export interface MatchProps {
 
 export function generateCustomResponder(
   responder: CustomResponder,
-  options: { code?: string | number; headers?: StringRecord },
+  options: { code?: string | number; headers?: StringRecord; type?: string },
 ): Middleware | null {
-  const { code = 200, headers } = options
+  const { code = 200, headers, type } = options
   if (responder && typeof responder === 'function' && !isMock(responder)) {
     // 自定义响应
-    return (req, res) => normalizedMatcherReturn(responder(req, res))
+    return async (req, res) => normalizedMatcherReturn(responder(req, res))
   } else if (!hasVNode(responder)) {
     // 固定响应
     return async (req, res) => {
@@ -48,8 +49,19 @@ export function generateCustomResponder(
         res.set(headers)
       }
 
+      if (type != null) {
+        res.type(type)
+      }
+
       if (responder) {
-        const data = await transformData(responder)
+        let data = await transformData(responder)
+        if (typeof data === 'number' || typeof data === 'boolean') {
+          data = JSON.stringify(data)
+          if (type == null) {
+            res.type('json')
+          }
+        }
+
         res.send(data)
       } else {
         res.end()
