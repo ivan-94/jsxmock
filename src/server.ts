@@ -106,9 +106,8 @@ export function runServer(config: ServiceConfig) {
 
     if (!hit) {
       console.warn(`${req.method} ${req.path} 请求未命中任何模拟器`)
+      next()
     }
-
-    next()
   })
 
   app.use(prefix, router)

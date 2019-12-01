@@ -10,6 +10,7 @@ import {
   mock,
   Delete,
   MatchBySearch,
+  Proxy,
   NotFound,
   Delay,
   Redirect,
@@ -104,6 +105,20 @@ export const test = () => {
         <Get path="/404">Not Found</Get>
         <NotFound onNotFound="未找到任何东西" />
       </Get>
+
+      <Proxy
+        path={/^\/proxy/}
+        target="http://localhost:4321"
+        secure={false}
+        logLevel="debug"
+        pathRewrite={{ '^/': '/test-proxy/' }}
+      />
+
+      <All path="/test-proxy/(.*)">
+        {(req, res) => {
+          res.send(`Proxy Matched: ${req.path}`)
+        }}
+      </All>
 
       {/* low level middleware */}
       <use
