@@ -12,7 +12,7 @@ jsxmock 是一个简单的 API Mock 服务器。它的特色就是使用 `JSX` �
 
 <br>
 
-深入了解 jsxmock 可以了解这篇文章: [**JSX AS DSL? 写个 Mock API 服务器看看**](TODO:)
+深入了解 jsxmock 可以了解这篇文章: [**JSX AS DSL? 写个 Mock API 服务器看看**](https://juejin.im/post/5de3d5ebf265da05c7722c08)
 
 <br>
 
@@ -259,7 +259,7 @@ server 组件用于配置 Mock 服务器，目前支持这些属性:
 
 <br>
 
-你可以通过[这篇文章](TODO:)了解它的设计思想和基本用法。
+你可以通过[这篇文章](https://juejin.im/post/5de3d5ebf265da05c7722c08)了解它的设计思想和基本用法。
 
 <br>
 
